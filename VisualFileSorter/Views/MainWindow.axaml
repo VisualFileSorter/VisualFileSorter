@@ -1,0 +1,399 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VisualFileSorter.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
+        xmlns:local="clr-namespace:VisualFileSorter"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="VisualFileSorter.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Title="Visual File Sorter"
+        MinWidth="970"
+        MinHeight="546">
+
+  <Window.Styles>
+    <Style Selector="Button.VFSButton">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="#CCD5F0">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.VFSButton:pointerover">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="#ECF4FF">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.VFSButton:pressed">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="#ECF4FF">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+
+    <Style Selector="Button.VFSButtonTransparent">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="Transparent">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.VFSButtonTransparent:pointerover">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="Transparent">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.VFSButtonTransparent:pressed">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="Transparent">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              TextBlock.FontFamily="Segoe UI"
+                              TextBlock.FontSize="12"
+                              TextBlock.FontWeight="Regular"
+                              TextBlock.Foreground="Black"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <DockPanel HorizontalAlignment="Stretch"
+           VerticalAlignment="Stretch"
+           Name="ContentWrapper">
+    <titlebars:WindowsTitleBar IsSeamless="False"/>
+    <titlebars:MacosTitleBar IsSeamless="False"/>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition MinWidth="100" MaxWidth="200" Width="20*" />
+        <ColumnDefinition MinWidth="100" Width="80*" />
+        <ColumnDefinition MinWidth="100" MaxWidth="200" Width="20*" />
+      </Grid.ColumnDefinitions>
+
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40"/>
+        <RowDefinition Height="13"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <!--Ribbon-->
+      <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="#CCD5F0">
+        <StackPanel Orientation="Horizontal">
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+            <DrawingPresenter Width="30" Height="30">
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M16,4.3965L16,16.0175 3,16.0175 3,9.9675C1.308,9.7215 0,8.2765 0,6.5175 0,4.7595 1.308,3.3135 3,3.0685L3,0.0175000000000001 5.711,0.0175000000000001 5.729,0.000499999999999723 5.746,0.0175000000000001 11.621,0.0175000000000001z" />
+                  <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M10,6.0176L10,4.7636 5.729,9.0356 5,8.3066 5,14.0176 14,14.0176 14,6.0176z M10,4.2716L10,2.0176 7.746,2.0176z M13.793,5.0176L11,5.0176 11,2.2246z" />
+                  <GeometryDrawing Brush="#FF424242" Geometry="F1M6.7464,1.0177L7.7464,2.0177 9.9994,2.0177 9.9994,6.0167 14.0004,6.0167 14.0004,14.0177 5.0004,14.0177 5.0004,10.0177 3.9994,10.0177 3.9994,15.0167 15.0004,15.0167 15.0004,4.8107 11.2064,1.0177z M10.9994,2.2247L13.7934,5.0177 10.9994,5.0177z" />
+                  <GeometryDrawing Brush="#FF00539C" Geometry="F1M8.832,4.5176L5.728,7.6216 5.021,6.9136 6.918,5.0176 3.5,5.0176C2.673,5.0176 2,5.6906 2,6.5176 2,7.3446 2.673,8.0176 3.5,8.0176L3.5,9.0176C2.122,9.0176 1,7.8966 1,6.5176 1,5.1396 2.122,4.0176 3.5,4.0176L6.918,4.0176 5.021,2.1216 5.728,1.4136z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Button>
+
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+            <DrawingPresenter Width="30" Height="30">
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M16,2L16,16 2.586,16 0,13.414 0,2C0,0.897,0.897,0,2,0L14,0C15.103,0,16,0.897,16,2" />
+                  <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M4,10L4,15 6,15 6,12 8,12 8,15 12,15 12,10z M13,7L3,7 3,3 13,3z" />
+                  <GeometryDrawing Brush="#FF00539C" Geometry="F1M13,3L3,3 3,7 13,7z M15,2L15,15 12,15 12,10 4,10 4,15 3,15 1,13 1,2C1,1.448,1.448,1,2,1L14,1C14.553,1,15,1.448,15,2 M6,12L8,12 8,15 6,15z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Button>
+
+          <Rectangle Fill="#2E4376" Width="2" Margin="2"/>
+
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+            <DrawingPresenter Width="30" Height="30">
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M14.8877,5.9717C14.8967,7.5607,14.2837,9.0537,13.1597,10.1757L7.3357,15.9997 7.0937,15.9997 4.3867,13.2927 10.3317,7.3477C10.6967,6.9837 10.8967,6.4987 10.8967,5.9847 10.8967,5.4697 10.6967,4.9847 10.3317,4.6207 9.9637,4.2527 9.4937,4.0377 8.9997,4.0107L8.9997,7.9997 0.999700000000001,7.9997 0.999700000000001,-0.000300000000000189 4.9997,-0.000300000000000189 4.9997,1.4737C6.0807,0.5217 7.4557,0.00170000000000048 8.9127,0.00170000000000048 10.4977,0.00170000000000048 11.9867,0.6177 13.1047,1.7367 14.2457,2.8777 14.8787,4.3817 14.8877,5.9717" />
+                  <GeometryDrawing Brush="#FF00539C" Geometry="F1M12.4531,9.4688L7.2151,14.7068 5.8011,13.2928 11.0391,8.0548C11.5921,7.5018 11.8961,6.7658 11.8961,5.9848 11.8961,5.2018 11.5921,4.4668 11.0391,3.9138 9.8411,2.7158 7.9831,2.7158 6.8421,3.8578L5.7001,4.9998 8.0001,4.9998 8.0001,6.9998 2.0001,6.9998 2.0001,0.9998 4.0001,0.9998 4.0001,3.8718 5.4281,2.4438C7.3491,0.521800000000001 10.4751,0.520799999999999 12.3971,2.4438 14.3751,4.4208 14.3751,7.5478 12.4531,9.4688" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Button>
+
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+            <DrawingPresenter Width="30" Height="30">
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M2.8955,1.7363C4.0135,0.6173 5.5015,0.00229999999999997 7.0875,0.00229999999999997 8.5435,0.00229999999999997 9.9185,0.5223 10.9995,1.4743L10.9995,0.000299999999999967 14.9995,0.000299999999999967 14.9995,8.0003 6.9995,8.0003 6.9995,4.0103C6.5055,4.0383 6.0365,4.2523 5.6675,4.6203 5.3035,4.9853 5.1035,5.4693 5.1035,5.9843 5.1035,6.4993 5.3035,6.9833 5.6675,7.3473L11.6135,13.2933 8.9065,16.0003 8.6645,16.0003 2.8395,10.1753C1.7165,9.0533 1.1035,7.5603 1.1125,5.9713 1.1215,4.3813 1.7535,2.8773 2.8955,1.7363" />
+                  <GeometryDrawing Brush="#FF00539C" Geometry="F1M3.6025,2.4434C5.5245,0.521400000000001,8.6515,0.5224,10.5725,2.4434L11.9995,3.8714 11.9995,1.0004 13.9995,1.0004 13.9995,7.0004 7.9995,7.0004 7.9995,5.0004 10.2995,5.0004 9.1575,3.8574C8.0165,2.7154 6.1595,2.7154 4.9605,3.9134 4.4085,4.4664 4.1035,5.2024 4.1035,5.9844 4.1035,6.7664 4.4085,7.5014 4.9605,8.0544L10.1995,13.2934 8.7855,14.7074 3.5465,9.4684C1.6245,7.5474,1.6245,4.4214,3.6025,2.4434" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Button>
+
+          <Rectangle Fill="#2E4376" Width="2" Margin="2" />
+
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
+                  Command="{Binding TransferFilesCmd}">
+            <DrawingPresenter Width="30" Height="30">
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M0,-0.000199999999999534L2,1.9998 0,1.9998 0,5.9998 2,5.9998 0,7.9998 2,7.9998 2,15.9998 16,15.9998 16,4.0008 10,4.0008 6,-0.000199999999999534z" />
+                  <GeometryDrawing Brush="#FF00539C" Geometry="F1M8.4238,12.2656C8.3358,12.4046 8.1858,12.4926 8.0218,12.4996 7.8638,12.5156 7.6988,12.4316 7.5998,12.2996L6.4448,10.7616 4.9998,12.2066 4.9998,12.9996 12.9998,12.9996 12.9998,11.6606 11.0278,8.8986z M6.1468,9.6466C6.2488,9.5436 6.3828,9.4926 6.5348,9.5016 6.6798,9.5116 6.8128,9.5836 6.9008,9.7006L7.9628,11.1176 10.5758,7.7346C10.6638,7.5936 10.8188,7.5056 10.9848,7.4996 11.1718,7.5026 11.3108,7.5746 11.4058,7.7086L12.9998,9.9396 12.9998,6.9996 6.9998,6.9996 5.9998,7.9996 4.9998,7.9996 4.9998,10.7926z M14.9998,4.9996L14.9998,14.9996 2.9998,14.9996 2.9998,7.9996 3.9998,7.9996 3.9998,13.9996 13.9998,13.9996 13.9998,5.9996 7.9998,5.9996 8.9998,4.9996z" />
+                  <GeometryDrawing Brush="Green" Geometry="F1M5,1L3,1 5,3 1,3 1,5 5,5 3,7 5,7 8,4z" />
+                  <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M13,13L5,13 5,12.207 6.445,10.762 7.6,12.3C7.699,12.432 7.864,12.516 8.021,12.5 8.186,12.492 8.336,12.404 8.424,12.266L11.027,8.898 13,11.66z M13,7L13,9.939 11.406,7.709C11.311,7.574 11.172,7.503 10.984,7.5 10.818,7.506 10.664,7.594 10.576,7.734L7.963,11.117 6.9,9.7C6.812,9.584 6.68,9.512 6.535,9.502 6.383,9.492 6.249,9.544 6.146,9.646L5,10.793 5,8 4,8 4,14 14,14 14,6 8,6 7,7z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Button>
+
+          <Viewbox Margin="5,0,0,0">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="1" Orientation="Vertical">
+                <RadioButton Content="Move" Margin="0,5,0,0" FontSize="18"/>
+                <RadioButton Content="Copy" Margin="0,-5,0,0" FontSize="18"/>
+              </StackPanel>
+            </Grid>
+          </Viewbox>
+
+        </StackPanel>
+      </Grid>
+
+      <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Background="#CCD5F0">
+        <Border BorderThickness="0,0,0,2" BorderBrush="#2E4376">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Session"  FontSize="10" Margin="17,-3,0,0"/>
+            <Rectangle Fill="#2E4376" Width="2" Margin="18,-2,0,5" />
+            <TextBlock Text="Undo/Redo"  FontSize="10" Margin="9,-3,0,0"/>
+            <Rectangle Fill="#2E4376" Width="2" Margin="12,-2,0,5" />
+            <TextBlock Text="Transfer"  FontSize="10" Margin="20,-3,0,0"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid Grid.Column="0" Grid.Row="2" >
+        <Border BorderThickness="0,0,2,0" BorderBrush="#2E4376">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Button Grid.Row="0" Content="Import" Classes="VFSButton"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding ImportFilesCmd}"/>
+            <ListBox
+                 Items="{Binding FileQueue}"
+                 Grid.Row="1"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Background="#5D6B99"
+                 SelectionMode="Multiple">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel/>
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="5,5,5,5">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="*"/>
+                      <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <Image Grid.Row="0" Source="{Binding Image}" />
+                    <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
+                      <Label Content="{Binding Name}"
+                             Foreground="White"
+                             HorizontalContentAlignment="Center"/>
+                    </Viewbox>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </Border>
+      </Grid>
+
+      <Grid Grid.Column="1" Grid.Row="2" Background="#5D6B99">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" ZIndex="1" Width="200" Height="200" Classes="VFSButtonTransparent"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Opacity="0.7"
+                IsVisible="True"
+                Command="{Binding OpenCurrentFileCmd}">
+          <DrawingPresenter Width="50" Height="50">
+            <DrawingPresenter.Drawing>
+              <DrawingGroup>
+                <GeometryDrawing Brush="White" Geometry="M15,10.001c0,0.299-0.305,0.514-0.305,0.514l-8.561,5.303C5.51,16.227,5,15.924,5,15.149V4.852  c0-0.777,0.51-1.078,1.135-0.67l8.561,5.305C14.695,9.487,15,9.702,15,10.001z"   />
+              </DrawingGroup>
+            </DrawingPresenter.Drawing>
+          </DrawingPresenter>
+        </Button>
+
+        <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.Image}" />
+        <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}" 
+               Foreground="White"
+               HorizontalAlignment="Center" />
+      </Grid>
+
+
+      <Grid Grid.Column="2" Grid.Row="2">
+        <Border BorderThickness="2,0,0,0" BorderBrush="#2E4376">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+
+            <Button Grid.Row="0" Content="Add Sort Directory" Classes="VFSButton"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding AddSortDirectoryCmd}"/>
+
+            <ListBox
+                 Items="{Binding SortFolderQueue}"
+                 Grid.Row="1"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Background="#5D6B99"
+                 SelectionMode="Multiple">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel/>
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="5,5,5,5">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="*"/>
+                      <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+
+                    <DrawingPresenter Grid.Row="0" ZIndex="0"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <DrawingPresenter.Drawing>
+                        <DrawingGroup >
+                          <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.5,1L9.61,1 10.61,3 13.496,3C14.323,3,14.996,3.673,14.996,4.5L14.996,12.5C14.996,13.327,14.323,14,13.496,14L1.5,14C0.673,14,0,13.327,0,12.5L0,2.5C0,1.673,0.673,1,1.5,1" />
+                          <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M1.9998,3.0004L1.9998,4.0004 8.8738,4.0004 8.3738,3.0004z" />
+                          <GeometryDrawing Brush="#FFDBB679" Geometry="F1M2,3L8.374,3 8.874,4 2,4z M13.496,4L10,4 9.992,4 8.992,2 1.5,2C1.225,2,1,2.224,1,2.5L1,12.5C1,12.776,1.225,13,1.5,13L13.496,13C13.773,13,13.996,12.776,13.996,12.5L13.996,4.5C13.996,4.224,13.773,4,13.496,4" />
+                        </DrawingGroup>
+                      </DrawingPresenter.Drawing>
+                    </DrawingPresenter>
+
+                    <Viewbox Grid.Row="0"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             Margin="20,40,20,20">
+                      <Grid>
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="auto"/>
+                          <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Label Grid.Row="0"
+                               Content="{Binding ShortcutLabel}"
+                               Foreground="#FFF6F6F6"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                        
+                        <Button Grid.Row="1"
+                                Content="Edit Shortcut"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Foreground="White"
+                                CommandParameter="{Binding}"
+                                Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
+                      </Grid>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
+                      <Label Content="{Binding Name}"
+                             Foreground="White"
+                             HorizontalContentAlignment="Center"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             ToolTip.Tip="{Binding FullName}"/>
+                    </Viewbox>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+           
+            
+          </Grid>
+        </Border>
+      </Grid>
+
+    </Grid>
+  </DockPanel>
+
+
+
+</Window>
