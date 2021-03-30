@@ -17,6 +17,13 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mImage, value);
         }
 
+        public bool IsPlayableMedia
+        {
+            get => mIsPlayableMedia;
+            set => this.RaiseAndSetIfChanged(ref mIsPlayableMedia, value);
+        }
+
         private Bitmap mImage = null;
+        private bool mIsPlayableMedia = false;
     }
 }

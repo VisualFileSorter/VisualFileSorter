@@ -18,11 +18,9 @@ using VisualFileSorter.Helpers;
 // TODO
 // Add sort directory key bindings
 // Add open and save json files
-// Add shellexecute transparent play button open
 // Add undo redo
 // clean up code and add comments
 // convert thumbnail provider to use CsWin32
-// Add credit for whereever I got the observable queue
 
 namespace VisualFileSorter.ViewModels
 {
@@ -45,6 +43,8 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<Unit, Unit> OpenCurrentFileCmd { get; }
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
 
+        // TODO check that file hasn't already been sorted or added to the queue
+        // TODO add warning message box with file paths of already queued/sorted files
         public async void ImportFiles()
         {
             var dlg = new OpenFileDialog();
@@ -58,7 +58,6 @@ namespace VisualFileSorter.ViewModels
             dlg.Filters.Add(new FileDialogFilter() { Name = "Video", Extensions = { "mp4", "avi" } });
             dlg.Filters.Add(new FileDialogFilter() { Name = "Documents", Extensions = { "txt", "doc" } });
 
-
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
             {
@@ -71,6 +70,12 @@ namespace VisualFileSorter.ViewModels
                     tempFileQueueItem.Image = ConvertBitmap(thumbnail);
                     tempFileQueueItem.FullName = fileItem;
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
+                    tempFileQueueItem.IsPlayableMedia = 
+                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".avi"  ||
+                        Path.GetExtension(fileItem) == ".txt" || Path.GetExtension(fileItem) == ".docx" ||
+                        Path.GetExtension(fileItem) == ".mkv" || Path.GetExtension(fileItem) == ".mp4"  ||
+                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".mp4"  ||
+                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".mp4";
                     // TODO look into fast observable collection and enqueue a range of files
                     FileQueue.Enqueue(tempFileQueueItem);
                 }
@@ -119,6 +124,7 @@ namespace VisualFileSorter.ViewModels
             Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, false);
         }
 
+        // TODO Prevent adding the same directory twice
         public async void AddSortDirectory()
         {
             var dlg = new OpenFolderDialog();
@@ -146,7 +152,7 @@ namespace VisualFileSorter.ViewModels
 
         private void SortFile(KeyEventArgs e)
         {
-            SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut.Matches(e));
+            SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut?.Matches(e) ?? false);
             if (foundSortFolder != null && CurrentFileQueueItem != null)
             {
                 foundSortFolder.SortSrcFiles.Add(CurrentFileQueueItem.FullName);
@@ -172,12 +178,18 @@ namespace VisualFileSorter.ViewModels
         {
             if (sortFolder != null)
             {
+                // Flash the label on the folder
+                sortFolder.IsShortcutFlashing = true;
+                sortFolder.ShortcutLabel = "            ";
+
                 // Get currently held keys
                 HashSet<Key> userShortcut = await Task.Run(() => Keyboard.GetUserShortcut());
 
-                KeyGesture test = new KeyGesture(Key.OemTilde, KeyModifiers.Control);
+                KeyGesture test = new KeyGesture(Key.E, KeyModifiers.Control);
                 AttachShortcut(mHostWindow, test);
                 sortFolder.Shortcut = test;
+                sortFolder.ShortcutButtonContent = "Edit Shortcut";
+                sortFolder.IsShortcutFlashing = false;
 
                 // Add spaces to shortcut string if necessary
                 string shortcutStr = test.ToString();

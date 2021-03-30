@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace VisualFileSorter.ViewModels
 {
+    // From https://github.com/TheDutchDevil/TweetTracker/blob/0a952abf90d99ebd01ffaec7039bf6509ac23644/Source/TweetTracker/Util/ObservableQueue.cs
     public class ObservableQueue<T> : INotifyCollectionChanged, IEnumerable<T>
     {
         private ObservableCollection<T> _collection;

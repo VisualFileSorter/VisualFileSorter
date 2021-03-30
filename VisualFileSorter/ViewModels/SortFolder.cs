@@ -23,14 +23,28 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mShortcut, value);
         }
 
+        public string ShortcutButtonContent
+        {
+            get => mShortcutButtonContent;
+            set => this.RaiseAndSetIfChanged(ref mShortcutButtonContent, value);
+        }
+
         public string ShortcutLabel
         {
             get => mShortcutLabel;
             set => this.RaiseAndSetIfChanged(ref mShortcutLabel, value);
         }
 
+        public bool IsShortcutFlashing
+        {
+            get => mIsShortcutFlashing;
+            set => this.RaiseAndSetIfChanged(ref mIsShortcutFlashing, value);
+        }
+
         private List<string> mSortSrcFiles = new List<string>();
         private KeyGesture mShortcut = null;
-        private string mShortcutLabel = null;
+        private string mShortcutButtonContent = "Add Shortcut";
+        private string mShortcutLabel = "            ";
+        private bool mIsShortcutFlashing = false;
     }
 }

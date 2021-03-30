@@ -17,6 +17,22 @@
         MinHeight="546">
 
   <Window.Styles>
+    <Style Selector="Label.Flashing">
+      <Style.Animations>
+        <Animation Duration="0:0:2" IterationCount="INFINITE">
+          <KeyFrame Cue="0%">
+            <Setter Property="Opacity" Value="0.0"/>
+          </KeyFrame>
+          <KeyFrame Cue="50%">
+            <Setter Property="Opacity" Value="1.0"/>
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="Opacity" Value="0.0"/>
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
     <Style Selector="Button.VFSButton">
       <Setter Property="Template">
         <ControlTemplate>
@@ -283,7 +299,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Opacity="0.7"
-                IsVisible="True"
+                IsVisible="{Binding CurrentFileQueueItem.IsPlayableMedia}"
                 Command="{Binding OpenCurrentFileCmd}">
           <DrawingPresenter Width="50" Height="50">
             <DrawingPresenter.Drawing>
@@ -356,7 +372,14 @@
                           <RowDefinition Height="auto"/>
                           <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        
+
+                        <Label Grid.Row="0" Classes="Flashing"
+                               Content="            "
+                               IsVisible="{Binding IsShortcutFlashing}"
+                               Background="#FFF6F6F6"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
                         <Label Grid.Row="0"
                                Content="{Binding ShortcutLabel}"
                                Foreground="#FFF6F6F6"
@@ -364,7 +387,7 @@
                                VerticalAlignment="Center"/>
                         
                         <Button Grid.Row="1"
-                                Content="Edit Shortcut"
+                                Content="{Binding ShortcutButtonContent}"
                                 HorizontalAlignment="Center" 
                                 VerticalAlignment="Center"
                                 Foreground="White"
