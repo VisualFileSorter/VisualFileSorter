@@ -65,9 +65,8 @@ namespace VisualFileSorter.ViewModels
                                                                                     "flac", "wv", "ac3", "dts", "amr", "alac",
                                                                                     "ape", "apl", "aac"} });
             dlg.Filters.Add(new FileDialogFilter() { Name = "Documents", Extensions = { "doc", "docx", "htm", "html", 
-                                                                                        "odt", "ods",
-                                                                                        "pdf", "tex", "xls", "xlsx", 
-                                                                                        "ppt", "pptx", "txt"} });
+                                                                                        "odt", "ods", "pdf", "tex", 
+                                                                                        "xls", "xlsx", "ppt", "pptx", "txt"} });
 
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
@@ -183,7 +182,7 @@ namespace VisualFileSorter.ViewModels
 
         private void OpenCurrentFile()
         {
-            if (File.Exists(CurrentFileQueueItem.FullName))
+            if (File.Exists(CurrentFileQueueItem?.FullName))
             {
                 PInvoke.ShellExecute(new HWND(0), null, CurrentFileQueueItem.FullName, null, null, 1);
             }
@@ -212,6 +211,35 @@ namespace VisualFileSorter.ViewModels
                 RoutingStrategies.Tunnel);
         }
 
+        private KeyGesture HashSetKeysToGesture(HashSet<Key> keys)
+        {
+            if (keys.Count != 0)
+            {
+                if (keys.Contains(Key.LeftCtrl) || keys.Contains(Key.RightCtrl))
+                {
+                    return new KeyGesture(
+                        keys.FirstOrDefault(x => x != Key.LeftCtrl && x != Key.RightCtrl),
+                        KeyModifiers.Control);
+                }
+                else if (keys.Contains(Key.LeftAlt) || keys.Contains(Key.RightAlt))
+                {
+                    return new KeyGesture(
+                        keys.FirstOrDefault(x => x != Key.LeftAlt && x != Key.RightAlt),
+                        KeyModifiers.Alt);
+                }
+                else if (keys.Contains(Key.LeftShift) || keys.Contains(Key.RightShift))
+                {
+                    return new KeyGesture(
+                        keys.FirstOrDefault(x => x != Key.LeftShift && x != Key.RightShift),
+                        KeyModifiers.Shift);
+                }
+                else
+                {
+                    return new KeyGesture(keys.FirstOrDefault());
+                }
+            }
+            return null;
+        }
 
         public async void EditShortcut(SortFolder sortFolder)
         {
@@ -225,39 +253,43 @@ namespace VisualFileSorter.ViewModels
                 // Get currently held keys
                 HashSet<Key> userShortcut = await Task.Run(() => Keyboard.GetUserShortcut());
 
+                
+                KeyGesture convertedGesture = HashSetKeysToGesture(userShortcut);
+
                 // TODO make sure shortcut is not already being used
-                // Maybe do message box instead
-                //while (true) { }
+                //if (convertedGesture.Matches(all other sort folders)) { show error msg and return;}
 
-                KeyGesture test = new KeyGesture(Key.E, KeyModifiers.Control);
-                AttachShortcut(mHostWindow, test);
-                sortFolder.Shortcut = test;
-                sortFolder.ShortcutButtonContent = "Edit Shortcut";
-                sortFolder.IsShortcutFlashing = false;
-                EditShortcutButtonsEnabled = true;
-
-                // Add spaces to shortcut string if necessary
-                string shortcutStr = test.ToString();
-                if (shortcutStr.Contains("+"))
+                if (convertedGesture != null)
                 {
-                    string[] splitShortcut = shortcutStr.Split('+');
-                    if (2 == splitShortcut.Count())
+                    AttachShortcut(mHostWindow, convertedGesture);
+                    sortFolder.Shortcut = convertedGesture;
+                    sortFolder.ShortcutButtonContent = "Edit Shortcut";
+                    sortFolder.IsShortcutFlashing = false;
+                    EditShortcutButtonsEnabled = true;
+
+                    // Add spaces to shortcut string if necessary
+                    string shortcutStr = convertedGesture.ToString();
+                    if (shortcutStr.Contains("+"))
                     {
-                        // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
-                        if (splitShortcut[1].Contains("Oem"))
+                        string[] splitShortcut = shortcutStr.Split('+');
+                        if (2 == splitShortcut.Count())
                         {
-                            sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1].Remove(0, 3);
+                            // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
+                            if (splitShortcut[1].Contains("Oem"))
+                            {
+                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1].Remove(0, 3);
+                            }
+                            else
+                            {
+                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
+                            }
                         }
-                        else
-                        {
-                            sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
-                        } 
                     }
-                }
-                else
-                {
-                    sortFolder.ShortcutLabel = shortcutStr;
-                }
+                    else
+                    {
+                        sortFolder.ShortcutLabel = shortcutStr;
+                    }
+                }    
             }
         }
 
