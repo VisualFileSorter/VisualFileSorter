@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.Windows.Sdk;
 using ReactiveUI;
+
 using VisualFileSorter.Helpers;
 
 // TODO
@@ -55,8 +56,18 @@ namespace VisualFileSorter.ViewModels
 
             dlg.Filters.Add(new FileDialogFilter() { Name = "All", Extensions = { "*" } });
             dlg.Filters.Add(new FileDialogFilter() { Name = "Images", Extensions = { "png", "jpg" } });
-            dlg.Filters.Add(new FileDialogFilter() { Name = "Video", Extensions = { "mp4", "avi" } });
-            dlg.Filters.Add(new FileDialogFilter() { Name = "Documents", Extensions = { "txt", "doc" } });
+            dlg.Filters.Add(new FileDialogFilter() { Name = "Video", Extensions = { "avi", "divx", "vob", "evo", "m2ts", "flv",
+                                                                                    "mkv", "mpg", "mpeg", "m1v", "mp4", "m4v",
+                                                                                    "mp4v", "mpv4", "3gp", "3gpp", "3g2", "3gp2",
+                                                                                    "ogg", "ogm", "ogv", "rm", "rmvb", "webm",
+                                                                                    "amv", "mov", "hdmov", "qt"} });
+            dlg.Filters.Add(new FileDialogFilter() { Name = "Audio", Extensions = { "mka", "mp3", "m4a", "oga", "ra", "ram",
+                                                                                    "flac", "wv", "ac3", "dts", "amr", "alac",
+                                                                                    "ape", "apl", "aac"} });
+            dlg.Filters.Add(new FileDialogFilter() { Name = "Documents", Extensions = { "doc", "docx", "htm", "html", 
+                                                                                        "odt", "ods",
+                                                                                        "pdf", "tex", "xls", "xlsx", 
+                                                                                        "ppt", "pptx", "txt"} });
 
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
@@ -70,12 +81,7 @@ namespace VisualFileSorter.ViewModels
                     tempFileQueueItem.Image = ConvertBitmap(thumbnail);
                     tempFileQueueItem.FullName = fileItem;
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
-                    tempFileQueueItem.IsPlayableMedia = 
-                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".avi"  ||
-                        Path.GetExtension(fileItem) == ".txt" || Path.GetExtension(fileItem) == ".docx" ||
-                        Path.GetExtension(fileItem) == ".mkv" || Path.GetExtension(fileItem) == ".mp4"  ||
-                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".mp4"  ||
-                        Path.GetExtension(fileItem) == ".mp4" || Path.GetExtension(fileItem) == ".mp4";
+                    tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
                     // TODO look into fast observable collection and enqueue a range of files
                     FileQueue.Enqueue(tempFileQueueItem);
                 }
@@ -85,6 +91,38 @@ namespace VisualFileSorter.ViewModels
                     CurrentFileQueueItem = FileQueue.Dequeue();
                 }
             }
+        }
+
+        public bool CheckIfPlayableMedia(string extension)
+        {
+            return extension == ".avi"  || extension == ".divx"  ||
+                   extension == ".vob"  || extension == ".evo"   ||
+                   extension == ".m2ts" || extension == ".flv"   ||
+                   extension == ".mkv"  || extension == ".mpg"   ||
+                   extension == ".mpeg" || extension == ".m1v"   ||
+                   extension == ".mp4"  || extension == ".m4v"   ||
+                   extension == ".mp4v" || extension == ".mpv4"  ||
+                   extension == ".3gp"  || extension == ".3gpp"  ||
+                   extension == ".3g2"  || extension == ".3gp2"  ||
+                   extension == ".ogg"  || extension == ".ogm"   ||
+                   extension == ".rm"   || extension == ".rmvb"  ||
+                   extension == ".webm" || extension == ".amv"   ||
+                   extension == ".mov"  || extension == ".hdmov" ||
+                   extension == ".qt"   || extension == ".mka"   ||
+                   extension == ".mp3"  || extension == ".m4a"   ||
+                   extension == ".oga"  || extension == ".ra"    ||
+                   extension == ".ram"  || extension == ".flac"  ||
+                   extension == ".wv"   || extension == ".ac3"   ||
+                   extension == ".dts"  || extension == ".amr"   ||
+                   extension == ".alac" || extension == ".ape"   ||
+                   extension == ".apl"  || extension == ".aac"   ||
+                   extension == ".doc"  || extension == ".docx"  ||
+                   extension == ".html" || extension == ".htm"   ||
+                   extension == ".odt"  || extension == ".ods"   ||
+                   extension == ".pdf"  || extension == ".tex"   ||
+                   extension == ".xls"  || extension == ".xlsx"  ||
+                   extension == ".ppt"  || extension == ".pptx"  ||
+                   extension == ".txt";
         }
 
         // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap
@@ -117,11 +155,12 @@ namespace VisualFileSorter.ViewModels
 
             // Make sure all source files still exist
             // Make sure destination folders still exist
+            // Make sure source files and dest lists are not empty
             // Double click on folder name on right to edit sort folder location
-            // Change label to red when folder does not exist
+            // Change label to red and flashing when folder does not exist
             // Add tooltip that says folder no longer exists
 
-            Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, false);
+            Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
         }
 
         // TODO Prevent adding the same directory twice
@@ -173,23 +212,29 @@ namespace VisualFileSorter.ViewModels
                 RoutingStrategies.Tunnel);
         }
 
-        // TODO disable all EditShortcut buttons while waiting for user shortcut
+
         public async void EditShortcut(SortFolder sortFolder)
         {
             if (sortFolder != null)
             {
-                // Flash the label on the folder
+                // Flash the label on the folder and disable button
                 sortFolder.IsShortcutFlashing = true;
                 sortFolder.ShortcutLabel = "            ";
+                EditShortcutButtonsEnabled = false;
 
                 // Get currently held keys
                 HashSet<Key> userShortcut = await Task.Run(() => Keyboard.GetUserShortcut());
+
+                // TODO make sure shortcut is not already being used
+                // Maybe do message box instead
+                //while (true) { }
 
                 KeyGesture test = new KeyGesture(Key.E, KeyModifiers.Control);
                 AttachShortcut(mHostWindow, test);
                 sortFolder.Shortcut = test;
                 sortFolder.ShortcutButtonContent = "Edit Shortcut";
                 sortFolder.IsShortcutFlashing = false;
+                EditShortcutButtonsEnabled = true;
 
                 // Add spaces to shortcut string if necessary
                 string shortcutStr = test.ToString();
@@ -244,9 +289,23 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mSortFolderQueue, value);
         }
 
+        public bool IsMove
+        {
+            get => mIsMove;
+            set => this.RaiseAndSetIfChanged(ref mIsMove, value);
+        }
+
+        public bool EditShortcutButtonsEnabled
+        {
+            get => mEditShortcutButtonsEnabled;
+            set => this.RaiseAndSetIfChanged(ref mEditShortcutButtonsEnabled, value);
+        }
+
         private ObservableQueue<SortFolder> mSortFolderQueue = new ObservableQueue<SortFolder>();
         private ObservableQueue<FileQueueItem> mFileQueue = new ObservableQueue<FileQueueItem>();
         private FileQueueItem mCurrentFileQueueItem = new FileQueueItem();
         private Window mHostWindow;
+        private bool mIsMove = true;
+        private bool mEditShortcutButtonsEnabled = true;
     }
 }
