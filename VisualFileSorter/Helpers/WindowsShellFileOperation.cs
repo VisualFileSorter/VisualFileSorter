@@ -4,13 +4,34 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using Microsoft.Windows.Sdk;
+//using Microsoft.Windows.Sdk;
 
 namespace VisualFileSorter.Helpers
 {
     // TODO Handle case where if a source file is missing then the whole operation fails
     public static class WindowsShellFileOperation
     {
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHFileOperation([In] ref SHFILEOPSTRUCT lpFileOp);
+
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct SHFILEOPSTRUCT
+        {
+            public IntPtr hwnd;
+            public FO_Func wFunc;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string pFrom;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string pTo;
+            public FILEOP_FLAGS fFlags;
+            [MarshalAs(UnmanagedType.Bool)]
+            public bool fAnyOperationsAborted;
+            public IntPtr hNameMappings;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpszProgressTitle;
+        }
+
         private enum FO_Func : uint
         {
             FO_MOVE = 0x0001,
@@ -49,43 +70,43 @@ namespace VisualFileSorter.Helpers
         {
             bool success = false;
 
-            SHFILEOPSTRUCTW fileOp = new SHFILEOPSTRUCTW();
-            fileOp.hwnd = new HWND(0);
-            fileOp.hNameMappings = null;
-            fileOp.fFlags = (ushort)(FILEOP_FLAGS.FOF_NORECURSION |
-                              FILEOP_FLAGS.FOF_NOCONFIRMMKDIR |
-                              FILEOP_FLAGS.FOF_MULTIDESTFILES);
+            SHFILEOPSTRUCT fileOp = new SHFILEOPSTRUCT();
+            fileOp.hwnd = IntPtr.Zero;// new HWND(0);
+            fileOp.hNameMappings = IntPtr.Zero;// null;
+            fileOp.fFlags = FILEOP_FLAGS.FOF_NORECURSION |
+                            FILEOP_FLAGS.FOF_NOCONFIRMMKDIR |
+                            FILEOP_FLAGS.FOF_MULTIDESTFILES;
             fileOp.fAnyOperationsAborted = false;
 
-            fixed (char* cSrc = src)
-            {
-                fileOp.pFrom = new PCWSTR(cSrc);
-            }
+            //fixed (char* cSrc = src)
+            //{
+            fileOp.pFrom = src; //new PCWSTR(cSrc);
+                                //}
 
-            fixed (char* cDest = dest)
-            {
-                fileOp.pTo = new PCWSTR(cDest);
-            }
+            //fixed (char* cDest = dest)
+            //{
+            fileOp.pTo = dest; //new PCWSTR(cDest);
+            //}
 
             if (isMove)
             {
-                fileOp.wFunc = (uint)FO_Func.FO_MOVE;
-                fixed (char* cTitle = "Moving files")
-                {
-                    fileOp.lpszProgressTitle = new PCWSTR(cTitle);
-                }
+                fileOp.wFunc = FO_Func.FO_MOVE;
+                //fixed (char* cTitle = "Moving files")
+                //{
+                fileOp.lpszProgressTitle = "Moving files"; //new PCWSTR(cTitle);
+                //}
             }
             else
             {
-                fileOp.wFunc = (uint)FO_Func.FO_COPY;
-                fixed (char* cTitle = "Copying files")
-                {
-                    fileOp.lpszProgressTitle = new PCWSTR(cTitle);
-                }
+                fileOp.wFunc = FO_Func.FO_COPY;
+                //fixed (char* cTitle = "Copying files")
+                //{
+                fileOp.lpszProgressTitle = "Copying files"; //new PCWSTR(cTitle);
+                //}
             }
 
             // Do file operation and check success
-            int result = PInvoke.SHFileOperation(ref fileOp);
+            int result = SHFileOperation(ref fileOp);
             if (result == 0)
             {
                 success = !fileOp.fAnyOperationsAborted;
