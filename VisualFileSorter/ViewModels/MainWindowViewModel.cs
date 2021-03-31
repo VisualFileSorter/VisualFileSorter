@@ -36,6 +36,8 @@ namespace VisualFileSorter.ViewModels
             AddSortDirectoryCmd = ReactiveCommand.Create(AddSortDirectory);
             OpenCurrentFileCmd = ReactiveCommand.Create(OpenCurrentFile);
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
+            EditSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
+            RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
         }
 
         public ReactiveCommand<Unit, Unit> ImportFilesCmd { get; }
@@ -43,6 +45,9 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<Unit, Unit> AddSortDirectoryCmd { get; }
         public ReactiveCommand<Unit, Unit> OpenCurrentFileCmd { get; }
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
+        public ReactiveCommand<SortFolder, Unit> EditSortFolderLocationCmd { get; }
+        public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
+
 
         // TODO check that file hasn't already been sorted or added to the queue
         // TODO add warning message box with file paths of already queued/sorted files
@@ -241,6 +246,25 @@ namespace VisualFileSorter.ViewModels
             return null;
         }
 
+        public async void RemoveSortFolder(SortFolder sortFolder)
+        {
+            SortFolderQueue.GetCollection()?.Remove(sortFolder);
+        }
+
+        public async void EditSortFolderLocation(SortFolder sortFolder)
+        {
+            var dlg = new OpenFolderDialog();
+            dlg.Title = "Select Sort Directory";
+            dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+            var result = await dlg.ShowAsync(mHostWindow);
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                sortFolder.FullName = result;
+                sortFolder.Name = Path.GetFileName(result);
+            }
+        }
+
         public async void EditShortcut(SortFolder sortFolder)
         {
             if (sortFolder != null)
@@ -287,7 +311,15 @@ namespace VisualFileSorter.ViewModels
                     }
                     else
                     {
-                        sortFolder.ShortcutLabel = shortcutStr;
+                        // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
+                        if (shortcutStr.Contains("Oem"))
+                        {
+                            sortFolder.ShortcutLabel = shortcutStr.Remove(0, 3);
+                        }
+                        else
+                        {
+                            sortFolder.ShortcutLabel = shortcutStr;
+                        }
                     }
                 }    
             }

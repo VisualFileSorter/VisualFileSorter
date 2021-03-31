@@ -3,6 +3,8 @@
         xmlns:vm="using:VisualFileSorter.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
         xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
         xmlns:local="clr-namespace:VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -352,6 +354,19 @@
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
 
+                    <Grid.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Remove" 
+                                  IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
+                                  CommandParameter="{Binding}"
+                                  Command="{Binding $parent[ListBox].DataContext.RemoveSortFolderCmd}"/>
+                        <MenuItem Header="Edit Location"
+                                  IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
+                                  CommandParameter="{Binding}"
+                                  Command="{Binding $parent[ListBox].DataContext.EditSortFolderLocationCmd}"/>
+                      </ContextMenu>
+                    </Grid.ContextMenu>
+
                     <DrawingPresenter Grid.Row="0" ZIndex="0"
                                       HorizontalAlignment="Center" VerticalAlignment="Center">
                       <DrawingPresenter.Drawing>
@@ -399,11 +414,18 @@
 
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
+                             Name="SortFolderShortNameLabel"
                              Foreground="White"
                              HorizontalContentAlignment="Center"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center"
-                             ToolTip.Tip="{Binding FullName}"/>
+                             ToolTip.Tip="{Binding FullName}">
+                        <i:Interaction.Behaviors>
+                          <ia:EventTriggerBehavior EventName="DoubleTapped" SourceObject="{Binding #SortFolderShortNameLabel}">
+                            <ia:InvokeCommandAction CommandParameter="{Binding}" Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
+                          </ia:EventTriggerBehavior>
+                        </i:Interaction.Behaviors>
+                      </Label>
                     </Viewbox>
                   </Grid>
                 </DataTemplate>
