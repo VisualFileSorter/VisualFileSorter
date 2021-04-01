@@ -202,7 +202,7 @@
           <Rectangle Fill="#2E4376" Width="2" Margin="2" />
 
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  Command="{Binding TransferFilesCmd}">
+                  Command="{Binding BuyMusicCommand}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>

@@ -15,6 +15,8 @@ using Microsoft.Windows.Sdk;
 using ReactiveUI;
 
 using VisualFileSorter.Helpers;
+using System.Windows.Input;
+using System.Reactive.Linq;
 
 // TODO
 // Add sort directory key bindings
@@ -38,6 +40,14 @@ namespace VisualFileSorter.ViewModels
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
             EditSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
+
+            ShowDialog = new Interaction<MainWindowViewModel, MessageWindowViewModel?>();
+            BuyMusicCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var store = new MainWindowViewModel(mHostWindow);
+
+                var result = await ShowDialog.Handle(store);
+            });
         }
 
         public ReactiveCommand<Unit, Unit> ImportFilesCmd { get; }
@@ -47,6 +57,10 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
         public ReactiveCommand<SortFolder, Unit> EditSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
+
+
+        public ICommand BuyMusicCommand { get; }
+        public Interaction<MainWindowViewModel, MessageWindowViewModel?> ShowDialog { get; }
 
 
         // TODO check that file hasn't already been sorted or added to the queue

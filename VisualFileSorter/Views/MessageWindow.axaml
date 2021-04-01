@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:VisualFileSorter.Views"
+        xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="VisualFileSorter.Views.MessageWindow"
+        Title="MessageWindow"
+        
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel HorizontalAlignment="Stretch"
+         VerticalAlignment="Stretch"
+         Name="ContentWrapper">
+    <titlebars:WindowsMessageTitleBar IsSeamless="False"/>
+    <!--<titlebars:MacosMessageTitleBar IsSeamless="False"/>-->
+    <Grid>
+  <Label Content="Wat"/>
+      </Grid>
+      </DockPanel>
+</Window>

@@ -19,4 +19,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\CustomTitleBars\WindowsMessageTitleBar.axaml.cs">
+      <DependentUpon>WindowsMessageTitleBar.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
