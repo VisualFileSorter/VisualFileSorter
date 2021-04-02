@@ -20,7 +20,7 @@ namespace VisualFileSorter.Views.CustomTitleBars
         private Path maximizeIcon;
         private ToolTip maximizeToolTip;
         private Button closeButton;
-        private Image windowIcon;
+        private Grid windowIcon;
 
         private DockPanel titleBar;
         private DockPanel titleBarBackground;
@@ -70,7 +70,7 @@ namespace VisualFileSorter.Views.CustomTitleBars
                 maximizeIcon = this.FindControl<Path>("MaximizeIcon");
                 maximizeToolTip = this.FindControl<ToolTip>("MaximizeToolTip");
                 closeButton = this.FindControl<Button>("CloseButton");
-                windowIcon = this.FindControl<Image>("WindowIcon");
+                windowIcon = this.FindControl<Grid>("WindowIcon");
 
                 minimizeButton.Click += MinimizeWindow;
                 maximizeButton.Click += MaximizeWindow;

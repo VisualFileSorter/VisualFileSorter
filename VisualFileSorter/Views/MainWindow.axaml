@@ -360,10 +360,10 @@
                                   IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
                                   CommandParameter="{Binding}"
                                   Command="{Binding $parent[ListBox].DataContext.RemoveSortFolderCmd}"/>
-                        <MenuItem Header="Edit Location"
+                        <MenuItem Header="Remap"
                                   IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
                                   CommandParameter="{Binding}"
-                                  Command="{Binding $parent[ListBox].DataContext.EditSortFolderLocationCmd}"/>
+                                  Command="{Binding $parent[ListBox].DataContext.RemapSortFolderLocationCmd}"/>
                       </ContextMenu>
                     </Grid.ContextMenu>
 
@@ -419,20 +419,12 @@
                              HorizontalContentAlignment="Center"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center"
-                             ToolTip.Tip="{Binding FullName}">
-                        <i:Interaction.Behaviors>
-                          <ia:EventTriggerBehavior EventName="DoubleTapped" SourceObject="{Binding #SortFolderShortNameLabel}">
-                            <ia:InvokeCommandAction CommandParameter="{Binding}" Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
-                          </ia:EventTriggerBehavior>
-                        </i:Interaction.Behaviors>
-                      </Label>
+                             ToolTip.Tip="{Binding FullName}"/>
                     </Viewbox>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
-           
-            
           </Grid>
         </Border>
       </Grid>

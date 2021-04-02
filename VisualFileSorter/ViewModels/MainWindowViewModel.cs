@@ -38,8 +38,10 @@ namespace VisualFileSorter.ViewModels
             AddSortDirectoryCmd = ReactiveCommand.Create(AddSortDirectory);
             OpenCurrentFileCmd = ReactiveCommand.Create(OpenCurrentFile);
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
-            EditSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
+            RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
+
+            MsgBoxCmd = ReactiveCommand.Create<Window>(MsgBoxMethod);
 
             ShowDialog = new Interaction<MainWindowViewModel, MessageWindowViewModel?>();
             BuyMusicCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -55,10 +57,10 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<Unit, Unit> AddSortDirectoryCmd { get; }
         public ReactiveCommand<Unit, Unit> OpenCurrentFileCmd { get; }
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
-        public ReactiveCommand<SortFolder, Unit> EditSortFolderLocationCmd { get; }
+        public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
 
-
+        public ReactiveCommand<Window, Unit> MsgBoxCmd { get; }
         public ICommand BuyMusicCommand { get; }
         public Interaction<MainWindowViewModel, MessageWindowViewModel?> ShowDialog { get; }
 
@@ -90,6 +92,8 @@ namespace VisualFileSorter.ViewModels
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
             {
+                // TODO disallow adding folders
+                List<FileQueueItem> fileItems = new List<FileQueueItem>();
                 foreach (string fileItem in result)
                 {
                     FileQueueItem tempFileQueueItem = new FileQueueItem();
@@ -100,10 +104,11 @@ namespace VisualFileSorter.ViewModels
                     tempFileQueueItem.FullName = fileItem;
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
                     tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
+
                     // TODO look into fast observable collection and enqueue a range of files
                     FileQueue.Enqueue(tempFileQueueItem);
                 }
-
+                
                 if (CurrentFileQueueItem?.Name == null)
                 {
                     CurrentFileQueueItem = FileQueue.Dequeue();
@@ -260,9 +265,14 @@ namespace VisualFileSorter.ViewModels
             return null;
         }
 
-        public async void RemoveSortFolder(SortFolder sortFolder)
+        public void RemoveSortFolder(SortFolder sortFolder)
         {
             SortFolderQueue.GetCollection()?.Remove(sortFolder);
+        }
+
+        public void MsgBoxMethod(Window msgBoxWindow)
+        {
+            msgBoxWindow?.Close();
         }
 
         public async void EditSortFolderLocation(SortFolder sortFolder)
