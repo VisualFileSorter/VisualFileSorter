@@ -277,7 +277,7 @@
                       <RowDefinition Height="*"/>
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <Image Grid.Row="0" Source="{Binding Image}" />
+                    <Image Grid.Row="0" Source="{Binding SmallImage}" />
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
                              Foreground="White"
@@ -312,7 +312,7 @@
           </DrawingPresenter>
         </Button>
 
-        <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.Image}" />
+        <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.BigImage}" />
         <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}" 
                Foreground="White"
                HorizontalAlignment="Center" />

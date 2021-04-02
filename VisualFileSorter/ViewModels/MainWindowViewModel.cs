@@ -75,7 +75,8 @@ namespace VisualFileSorter.ViewModels
             dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             dlg.Filters.Add(new FileDialogFilter() { Name = "All", Extensions = { "*" } });
-            dlg.Filters.Add(new FileDialogFilter() { Name = "Images", Extensions = { "png", "jpg" } });
+            dlg.Filters.Add(new FileDialogFilter() { Name = "Images", Extensions = { "tif", "tiff", "bmp", "png", "jpg", "jpeg",
+                                                                                     "gif", "raw", "cr2", "nef", "orf", "sr2", "webp"} });
             dlg.Filters.Add(new FileDialogFilter() { Name = "Video", Extensions = { "avi", "divx", "vob", "evo", "m2ts", "flv",
                                                                                     "mkv", "mpg", "mpeg", "m1v", "mp4", "m4v",
                                                                                     "mp4v", "mpv4", "3gp", "3gpp", "3g2", "3gp2",
@@ -96,10 +97,10 @@ namespace VisualFileSorter.ViewModels
                 foreach (string fileItem in result)
                 {
                     FileQueueItem tempFileQueueItem = new FileQueueItem();
-                    int THUMB_SIZE = 256;
+                    int THUMB_SIZE = 64;
                     Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                        fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                    tempFileQueueItem.Image = ConvertBitmap(thumbnail);
+                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
                     tempFileQueueItem.FullName = fileItem;
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
                     tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
@@ -111,6 +112,10 @@ namespace VisualFileSorter.ViewModels
                 if (CurrentFileQueueItem?.Name == null)
                 {
                     CurrentFileQueueItem = FileQueue.Dequeue();
+                    int THUMB_SIZE = 256;
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
                 }
             }
         }
@@ -221,6 +226,10 @@ namespace VisualFileSorter.ViewModels
             {
                 foundSortFolder.SortSrcFiles.Add(CurrentFileQueueItem.FullName);
                 CurrentFileQueueItem = FileQueue.Dequeue();
+                int THUMB_SIZE = 256;
+                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
             }
         }
 

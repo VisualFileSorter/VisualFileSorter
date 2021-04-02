@@ -11,10 +11,16 @@ namespace VisualFileSorter.ViewModels
 {
     public class FileQueueItem : QueueItem
     {
-        public Bitmap Image
+        public Bitmap? SmallImage
         {
-            get => mImage;
-            set => this.RaiseAndSetIfChanged(ref mImage, value);
+            get => mSmallImage;
+            set => this.RaiseAndSetIfChanged(ref mSmallImage, value);
+        }
+
+        public Bitmap? BigImage
+        {
+            get => mBigImage;
+            set => this.RaiseAndSetIfChanged(ref mBigImage, value);
         }
 
         public bool IsPlayableMedia
@@ -23,7 +29,8 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mIsPlayableMedia, value);
         }
 
-        private Bitmap mImage = null;
+        private Bitmap? mSmallImage = null;
+        private Bitmap? mBigImage = null;
         private bool mIsPlayableMedia = false;
     }
 }
