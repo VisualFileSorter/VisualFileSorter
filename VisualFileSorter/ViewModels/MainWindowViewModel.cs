@@ -11,19 +11,18 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Microsoft.Windows.Sdk;
 using ReactiveUI;
 
 using VisualFileSorter.Helpers;
 using System.Windows.Input;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 
 // TODO
 // Add sort directory key bindings
 // Add open and save json files
 // Add undo redo
 // clean up code and add comments
-// convert thumbnail provider to use CsWin32
 
 namespace VisualFileSorter.ViewModels
 {
@@ -204,11 +203,14 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        [DllImport("Shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr ShellExecute(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
+
         private void OpenCurrentFile()
         {
             if (File.Exists(CurrentFileQueueItem?.FullName))
             {
-                PInvoke.ShellExecute(new HWND(0), null, CurrentFileQueueItem.FullName, null, null, 1);
+                ShellExecute(IntPtr.Zero, null, CurrentFileQueueItem.FullName, null, null, 1);
             }
         }
 
