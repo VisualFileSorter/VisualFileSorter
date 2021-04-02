@@ -5,8 +5,9 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Text;
 
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,12 +15,9 @@ using Avalonia.Interactivity;
 using ReactiveUI;
 
 using VisualFileSorter.Helpers;
-using System.Windows.Input;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 
 // TODO
-// Add sort directory key bindings
+// error/warning/info messages
 // Add open and save json files
 // Add undo redo
 // clean up code and add comments
@@ -30,8 +28,10 @@ namespace VisualFileSorter.ViewModels
     {
         public MainWindowViewModel(Window hostWindow)
         {
+            // Get the main host window
             mHostWindow = hostWindow;
 
+            // MainWindow commands
             ImportFilesCmd = ReactiveCommand.Create(ImportFiles);
             TransferFilesCmd = ReactiveCommand.Create(TransferFiles);
             AddSortDirectoryCmd = ReactiveCommand.Create(AddSortDirectory);
@@ -40,15 +40,10 @@ namespace VisualFileSorter.ViewModels
             RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
 
-            MsgBoxCmd = ReactiveCommand.Create<Window>(MsgBoxMethod);
-
+            // MessageBox commands
+            OpenMissingSortFolderDialogCmd = ReactiveCommand.Create(OpenMissingSortFolderDialog);
+            CloseMsgBoxCmd = ReactiveCommand.Create<Window>(CloseMsgBox);
             ShowDialog = new Interaction<MainWindowViewModel, MessageWindowViewModel?>();
-            BuyMusicCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var store = new MainWindowViewModel(mHostWindow);
-
-                var result = await ShowDialog.Handle(store);
-            });
         }
 
         public ReactiveCommand<Unit, Unit> ImportFilesCmd { get; }
@@ -59,8 +54,9 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
 
-        public ReactiveCommand<Window, Unit> MsgBoxCmd { get; }
-        public ICommand BuyMusicCommand { get; }
+        // MessageBox commands
+        public ReactiveCommand<Unit, Unit> OpenMissingSortFolderDialogCmd { get; }
+        public ReactiveCommand<Window, Unit> CloseMsgBoxCmd { get; }
         public Interaction<MainWindowViewModel, MessageWindowViewModel?> ShowDialog { get; }
 
 
@@ -92,7 +88,7 @@ namespace VisualFileSorter.ViewModels
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
             {
-                // TODO disallow adding folders
+                // TODO disallow adding folders?
                 List<FileQueueItem> fileItems = new List<FileQueueItem>();
                 foreach (string fileItem in result)
                 {
@@ -105,10 +101,11 @@ namespace VisualFileSorter.ViewModels
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
                     tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
 
-                    // TODO look into fast observable collection and enqueue a range of files
-                    FileQueue.Enqueue(tempFileQueueItem);
+                    fileItems.Add(tempFileQueueItem);
+                    
                 }
-                
+                FileQueue.EnqueueRange(fileItems);
+
                 if (CurrentFileQueueItem?.Name == null)
                 {
                     CurrentFileQueueItem = FileQueue.Dequeue();
@@ -150,6 +147,13 @@ namespace VisualFileSorter.ViewModels
                    extension == ".xls"  || extension == ".xlsx"  ||
                    extension == ".ppt"  || extension == ".pptx"  ||
                    extension == ".txt";
+        }
+
+        
+        public async void OpenMissingSortFolderDialog()
+        {
+            var store = new MainWindowViewModel(mHostWindow);
+            var result = await ShowDialog.Handle(store);
         }
 
         // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap
@@ -281,7 +285,7 @@ namespace VisualFileSorter.ViewModels
             SortFolderQueue.GetCollection()?.Remove(sortFolder);
         }
 
-        public void MsgBoxMethod(Window msgBoxWindow)
+        public void CloseMsgBox(Window msgBoxWindow)
         {
             msgBoxWindow?.Close();
         }

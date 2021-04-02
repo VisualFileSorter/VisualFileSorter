@@ -41,10 +41,18 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mIsShortcutFlashing, value);
         }
 
+        public bool FolderExists
+        {
+            get => mFolderExists;
+            set => this.RaiseAndSetIfChanged(ref mFolderExists, value);
+        }
+
+
         private List<string> mSortSrcFiles = new List<string>();
         private KeyGesture mShortcut = null;
         private string mShortcutButtonContent = "Add Shortcut";
         private string mShortcutLabel = "            ";
         private bool mIsShortcutFlashing = false;
+        private bool mFolderExists = true;
     }
 }

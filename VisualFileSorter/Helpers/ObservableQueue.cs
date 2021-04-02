@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VisualFileSorter.ViewModels
+namespace VisualFileSorter.Helpers
 {
     // From https://github.com/TheDutchDevil/TweetTracker/blob/0a952abf90d99ebd01ffaec7039bf6509ac23644/Source/TweetTracker/Util/ObservableQueue.cs
     public class ObservableQueue<T> : INotifyCollectionChanged, IEnumerable<T>
     {
         private ObservableCollection<T> _collection;
+        private bool _suspendNotification = false;
 
         public ObservableQueue()
         {
@@ -28,6 +29,20 @@ namespace VisualFileSorter.ViewModels
         public void Enqueue(T item)
         {
             this._collection.Add(item);
+        }
+
+        public void EnqueueRange(IEnumerable<T> items)
+        {
+            if (items == null)
+                throw new ArgumentNullException("items");
+
+            _suspendNotification = true;
+            foreach (var item in items)
+            {
+                this._collection.Add(item);
+            }
+            _suspendNotification = false;
+            this.CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>
@@ -73,7 +88,7 @@ namespace VisualFileSorter.ViewModels
 
         void _collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (this.CollectionChanged != null)
+            if (this.CollectionChanged != null && !_suspendNotification)
             {
                 this.CollectionChanged(this, e);
             }

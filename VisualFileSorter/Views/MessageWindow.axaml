@@ -31,7 +31,7 @@
               VerticalAlignment="Bottom"
               Margin="10"
               CommandParameter="{Binding #MessageBoxWindow}" 
-              Command="{Binding MsgBoxCmd}"/>
+              Command="{Binding CloseMsgBoxCmd}"/>
     </Grid>
   </DockPanel>
 </Window>
