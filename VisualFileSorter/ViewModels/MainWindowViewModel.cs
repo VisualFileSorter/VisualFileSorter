@@ -11,17 +11,18 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Microsoft.Windows.Sdk;
 using ReactiveUI;
 
 using VisualFileSorter.Helpers;
+using System.Windows.Input;
+using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 
 // TODO
 // Add sort directory key bindings
 // Add open and save json files
 // Add undo redo
 // clean up code and add comments
-// convert thumbnail provider to use CsWin32
 
 namespace VisualFileSorter.ViewModels
 {
@@ -36,6 +37,18 @@ namespace VisualFileSorter.ViewModels
             AddSortDirectoryCmd = ReactiveCommand.Create(AddSortDirectory);
             OpenCurrentFileCmd = ReactiveCommand.Create(OpenCurrentFile);
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
+            RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
+            RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
+
+            MsgBoxCmd = ReactiveCommand.Create<Window>(MsgBoxMethod);
+
+            ShowDialog = new Interaction<MainWindowViewModel, MessageWindowViewModel?>();
+            BuyMusicCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var store = new MainWindowViewModel(mHostWindow);
+
+                var result = await ShowDialog.Handle(store);
+            });
         }
 
         public ReactiveCommand<Unit, Unit> ImportFilesCmd { get; }
@@ -43,6 +56,13 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<Unit, Unit> AddSortDirectoryCmd { get; }
         public ReactiveCommand<Unit, Unit> OpenCurrentFileCmd { get; }
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
+        public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
+        public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
+
+        public ReactiveCommand<Window, Unit> MsgBoxCmd { get; }
+        public ICommand BuyMusicCommand { get; }
+        public Interaction<MainWindowViewModel, MessageWindowViewModel?> ShowDialog { get; }
+
 
         // TODO check that file hasn't already been sorted or added to the queue
         // TODO add warning message box with file paths of already queued/sorted files
@@ -55,7 +75,8 @@ namespace VisualFileSorter.ViewModels
             dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             dlg.Filters.Add(new FileDialogFilter() { Name = "All", Extensions = { "*" } });
-            dlg.Filters.Add(new FileDialogFilter() { Name = "Images", Extensions = { "png", "jpg" } });
+            dlg.Filters.Add(new FileDialogFilter() { Name = "Images", Extensions = { "tif", "tiff", "bmp", "png", "jpg", "jpeg",
+                                                                                     "gif", "raw", "cr2", "nef", "orf", "sr2", "webp"} });
             dlg.Filters.Add(new FileDialogFilter() { Name = "Video", Extensions = { "avi", "divx", "vob", "evo", "m2ts", "flv",
                                                                                     "mkv", "mpg", "mpeg", "m1v", "mp4", "m4v",
                                                                                     "mp4v", "mpv4", "3gp", "3gpp", "3g2", "3gp2",
@@ -71,23 +92,30 @@ namespace VisualFileSorter.ViewModels
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null)
             {
+                // TODO disallow adding folders
+                List<FileQueueItem> fileItems = new List<FileQueueItem>();
                 foreach (string fileItem in result)
                 {
                     FileQueueItem tempFileQueueItem = new FileQueueItem();
-                    int THUMB_SIZE = 256;
+                    int THUMB_SIZE = 64;
                     Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                        fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                    tempFileQueueItem.Image = ConvertBitmap(thumbnail);
+                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
                     tempFileQueueItem.FullName = fileItem;
                     tempFileQueueItem.Name = Path.GetFileName(fileItem);
                     tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
+
                     // TODO look into fast observable collection and enqueue a range of files
                     FileQueue.Enqueue(tempFileQueueItem);
                 }
-
+                
                 if (CurrentFileQueueItem?.Name == null)
                 {
                     CurrentFileQueueItem = FileQueue.Dequeue();
+                    int THUMB_SIZE = 256;
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
                 }
             }
         }
@@ -180,11 +208,14 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        [DllImport("Shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr ShellExecute(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
+
         private void OpenCurrentFile()
         {
             if (File.Exists(CurrentFileQueueItem?.FullName))
             {
-                PInvoke.ShellExecute(new HWND(0), null, CurrentFileQueueItem.FullName, null, null, 1);
+                ShellExecute(IntPtr.Zero, null, CurrentFileQueueItem.FullName, null, null, 1);
             }
         }
 
@@ -195,6 +226,10 @@ namespace VisualFileSorter.ViewModels
             {
                 foundSortFolder.SortSrcFiles.Add(CurrentFileQueueItem.FullName);
                 CurrentFileQueueItem = FileQueue.Dequeue();
+                int THUMB_SIZE = 256;
+                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
             }
         }
 
@@ -239,6 +274,30 @@ namespace VisualFileSorter.ViewModels
                 }
             }
             return null;
+        }
+
+        public void RemoveSortFolder(SortFolder sortFolder)
+        {
+            SortFolderQueue.GetCollection()?.Remove(sortFolder);
+        }
+
+        public void MsgBoxMethod(Window msgBoxWindow)
+        {
+            msgBoxWindow?.Close();
+        }
+
+        public async void EditSortFolderLocation(SortFolder sortFolder)
+        {
+            var dlg = new OpenFolderDialog();
+            dlg.Title = "Select Sort Directory";
+            dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+            var result = await dlg.ShowAsync(mHostWindow);
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                sortFolder.FullName = result;
+                sortFolder.Name = Path.GetFileName(result);
+            }
         }
 
         public async void EditShortcut(SortFolder sortFolder)
@@ -287,7 +346,15 @@ namespace VisualFileSorter.ViewModels
                     }
                     else
                     {
-                        sortFolder.ShortcutLabel = shortcutStr;
+                        // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
+                        if (shortcutStr.Contains("Oem"))
+                        {
+                            sortFolder.ShortcutLabel = shortcutStr.Remove(0, 3);
+                        }
+                        else
+                        {
+                            sortFolder.ShortcutLabel = shortcutStr;
+                        }
                     }
                 }    
             }

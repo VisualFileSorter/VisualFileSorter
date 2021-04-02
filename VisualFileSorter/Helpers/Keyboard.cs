@@ -21,7 +21,7 @@ namespace VisualFileSorter.Helpers
                 {
                     if (Keys.Contains(Key.LeftCtrl) || Keys.Contains(Key.RightCtrl))
                     {
-                        if (GetNonModifierKey(ref Shortcut))
+                        if (GetNonModifierKey(ref Shortcut, false, true))
                         {
                             Shortcut.Add(Key.LeftCtrl);
                             return Shortcut;
@@ -29,7 +29,7 @@ namespace VisualFileSorter.Helpers
                     }
                     else if (Keys.Contains(Key.LeftAlt) || Keys.Contains(Key.RightAlt))
                     {
-                        if (GetNonModifierKey(ref Shortcut))
+                        if (GetNonModifierKey(ref Shortcut, true, true))
                         {
                             Shortcut.Add(Key.LeftAlt);
                             return Shortcut;
@@ -37,7 +37,7 @@ namespace VisualFileSorter.Helpers
                     }
                     else if (Keys.Contains(Key.LeftShift) || Keys.Contains(Key.RightShift))
                     {
-                        if (GetNonModifierKey(ref Shortcut))
+                        if (GetNonModifierKey(ref Shortcut, true, true))
                         {
                             Shortcut.Add(Key.LeftShift);
                             return Shortcut;
@@ -45,7 +45,7 @@ namespace VisualFileSorter.Helpers
                     }
                     else
                     {
-                        if (GetNonModifierKey(ref Shortcut))
+                        if (GetNonModifierKey(ref Shortcut, true, false))
                         {
                             return Shortcut;
                         }
@@ -54,24 +54,17 @@ namespace VisualFileSorter.Helpers
             }
         }
 
-        private static bool GetNonModifierKey(ref HashSet<Key> Shortcut)
+        private static bool GetNonModifierKey(ref HashSet<Key> Shortcut, bool allowYZOS, bool allowTabCapsLock)
         {
             if      (Keys.Contains(Key.Back))             { Shortcut.Add(Key.Back); return true; }
-            else if (Keys.Contains(Key.Tab))              { Shortcut.Add(Key.Tab); return true; }
-            else if (Keys.Contains(Key.Return))           { Shortcut.Add(Key.Return); return true; }
-            else if (Keys.Contains(Key.Pause))            { Shortcut.Add(Key.Pause); return true; }
-            else if (Keys.Contains(Key.CapsLock))         { Shortcut.Add(Key.CapsLock); return true; }
-            else if (Keys.Contains(Key.Escape))           { Shortcut.Add(Key.Escape); return true; }
-            else if (Keys.Contains(Key.Space))            { Shortcut.Add(Key.Space); return true; }
-            else if (Keys.Contains(Key.PageDown))         { Shortcut.Add(Key.PageDown); return true; }
-            else if (Keys.Contains(Key.End))              { Shortcut.Add(Key.End); return true; }
-            else if (Keys.Contains(Key.Home))             { Shortcut.Add(Key.Home); return true; }
+            else if (Keys.Contains(Key.Tab))              { if (allowTabCapsLock) 
+                                                          { Shortcut.Add(Key.Tab); return true; } else { return false; } }
+            else if (Keys.Contains(Key.CapsLock))         { if (allowTabCapsLock) 
+                                                          { Shortcut.Add(Key.CapsLock); return true; } else { return false; } }
             else if (Keys.Contains(Key.Left))             { Shortcut.Add(Key.Left); return true; }
             else if (Keys.Contains(Key.Up))               { Shortcut.Add(Key.Up); return true; }
             else if (Keys.Contains(Key.Right))            { Shortcut.Add(Key.Right); return true; }
             else if (Keys.Contains(Key.Down))             { Shortcut.Add(Key.Down); return true; }
-            else if (Keys.Contains(Key.PrintScreen))      { Shortcut.Add(Key.PrintScreen); return true; }
-            else if (Keys.Contains(Key.Insert))           { Shortcut.Add(Key.Insert); return true; }
             else if (Keys.Contains(Key.Delete))           { Shortcut.Add(Key.Delete); return true; }
             else if (Keys.Contains(Key.D0))               { Shortcut.Add(Key.D0); return true; }
             else if (Keys.Contains(Key.D1))               { Shortcut.Add(Key.D1); return true; }
@@ -97,22 +90,22 @@ namespace VisualFileSorter.Helpers
             else if (Keys.Contains(Key.L))                { Shortcut.Add(Key.L); return true; }
             else if (Keys.Contains(Key.M))                { Shortcut.Add(Key.M); return true; }
             else if (Keys.Contains(Key.N))                { Shortcut.Add(Key.N); return true; }
-            else if (Keys.Contains(Key.O))                { Shortcut.Add(Key.O); return true; }
+            else if (Keys.Contains(Key.O))                { if (allowYZOS) 
+                                                          { Shortcut.Add(Key.O); return true; } else { return false; } }
             else if (Keys.Contains(Key.P))                { Shortcut.Add(Key.P); return true; }
             else if (Keys.Contains(Key.Q))                { Shortcut.Add(Key.Q); return true; }
             else if (Keys.Contains(Key.R))                { Shortcut.Add(Key.R); return true; }
-            else if (Keys.Contains(Key.S))                { Shortcut.Add(Key.S); return true; }
+            else if (Keys.Contains(Key.S))                { if (allowYZOS) 
+                                                          { Shortcut.Add(Key.S); return true; } else { return false; } }
             else if (Keys.Contains(Key.T))                { Shortcut.Add(Key.T); return true; }
             else if (Keys.Contains(Key.U))                { Shortcut.Add(Key.U); return true; }
             else if (Keys.Contains(Key.V))                { Shortcut.Add(Key.V); return true; }
             else if (Keys.Contains(Key.W))                { Shortcut.Add(Key.W); return true; }
             else if (Keys.Contains(Key.X))                { Shortcut.Add(Key.X); return true; }
-            else if (Keys.Contains(Key.Y))                { Shortcut.Add(Key.Y); return true; }
-            else if (Keys.Contains(Key.Z))                { Shortcut.Add(Key.Z); return true; }
-            else if (Keys.Contains(Key.LWin))             { Shortcut.Add(Key.LWin); return true; }
-            else if (Keys.Contains(Key.RWin))             { Shortcut.Add(Key.RWin); return true; }
-            else if (Keys.Contains(Key.Apps))             { Shortcut.Add(Key.Apps); return true; }
-            else if (Keys.Contains(Key.Sleep))            { Shortcut.Add(Key.Sleep); return true; }
+            else if (Keys.Contains(Key.Y))                { if (allowYZOS) 
+                                                          { Shortcut.Add(Key.Y); return true; } else { return false; } }
+            else if (Keys.Contains(Key.Z))                { if (allowYZOS) 
+                                                          { Shortcut.Add(Key.Z); return true; } else { return false; } }
             else if (Keys.Contains(Key.NumPad0))          { Shortcut.Add(Key.NumPad0); return true; }
             else if (Keys.Contains(Key.NumPad1))          { Shortcut.Add(Key.NumPad1); return true; }
             else if (Keys.Contains(Key.NumPad2))          { Shortcut.Add(Key.NumPad2); return true; }
@@ -148,7 +141,6 @@ namespace VisualFileSorter.Helpers
             else if (Keys.Contains(Key.OemPeriod))        { Shortcut.Add(Key.OemPeriod); return true; }
             else if (Keys.Contains(Key.Oem2))             { Shortcut.Add(Key.Oem2); return true; }
             else if (Keys.Contains(Key.OemTilde))         { Shortcut.Add(Key.OemTilde); return true; }
-            else if (Keys.Contains(Key.Oem4))             { Shortcut.Add(Key.Oem4); return true; }
             else if (Keys.Contains(Key.Oem4))             { Shortcut.Add(Key.Oem4); return true; }
             else if (Keys.Contains(Key.OemPipe))          { Shortcut.Add(Key.OemPipe); return true; }
             else if (Keys.Contains(Key.OemCloseBrackets)) { Shortcut.Add(Key.OemCloseBrackets); return true; }

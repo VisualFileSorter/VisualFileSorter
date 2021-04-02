@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.IO;
 
 // From https://stackoverflow.com/questions/21751747
-// TODO Rewrite with CsWin32
 namespace VisualFileSorter.Helpers
 {
     [Flags]
@@ -19,7 +18,7 @@ namespace VisualFileSorter.Helpers
         InCacheOnly = 0x10,
     }
 
-    public class WindowsThumbnailProvider
+    public unsafe class WindowsThumbnailProvider
     {
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";
 
@@ -35,6 +34,93 @@ namespace VisualFileSorter.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteObject(IntPtr hObject);
 
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe IntPtr memcpy(void* dst, void* src, UIntPtr count);
+
+        public static Bitmap GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
+        {
+            var hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+
+            try
+            {
+                // return a System.Drawing.Bitmap from the hBitmap
+                return GetBitmapFromHBitmap(hBitmap);
+            }
+            finally
+            {
+                // delete HBitmap to avoid memory leaks
+                DeleteObject(hBitmap);
+            }
+        }
+
+        public static Bitmap GetBitmapFromHBitmap(IntPtr nativeHBitmap)
+        {
+            Bitmap bmp = Image.FromHbitmap(nativeHBitmap);
+
+            if (Image.GetPixelFormatSize(bmp.PixelFormat) < 32)
+                return bmp;
+
+            using (bmp)
+                return CreateAlphaBitmap(bmp, PixelFormat.Format32bppArgb);
+        }
+
+        public static unsafe Bitmap CreateAlphaBitmap(Bitmap srcBitmap, PixelFormat targetPixelFormat)
+        {
+            var result = new Bitmap(srcBitmap.Width, srcBitmap.Height, targetPixelFormat);
+
+            var bmpBounds = new Rectangle(0, 0, srcBitmap.Width, srcBitmap.Height);
+            var srcData = srcBitmap.LockBits(bmpBounds, ImageLockMode.ReadOnly, srcBitmap.PixelFormat);
+            var destData = result.LockBits(bmpBounds, ImageLockMode.ReadOnly, targetPixelFormat);
+
+            var srcDataPtr = (byte*)srcData.Scan0;
+            var destDataPtr = (byte*)destData.Scan0;
+
+            try
+            {
+                for (int y = 0; y <= srcData.Height - 1; y++)
+                {
+                    for (int x = 0; x <= srcData.Width - 1; x++)
+                    {
+                        //this is really important because one stride may be positive and the other negative
+                        var position = srcData.Stride * y + 4 * x;
+                        var position2 = destData.Stride * y + 4 * x;
+
+                        memcpy(destDataPtr + position2, srcDataPtr + position, (UIntPtr)4);
+                    }
+                }
+            }
+            finally
+            {
+                srcBitmap.UnlockBits(srcData);
+                result.UnlockBits(destData);
+            }
+
+            return result;
+        }
+
+        private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
+        {
+            IShellItem nativeShellItem;
+            Guid shellItem2Guid = new Guid(IShellItem2Guid);
+            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
+
+            if (retCode != 0)
+                throw Marshal.GetExceptionForHR(retCode);
+
+            NativeSize nativeSize = new NativeSize();
+            nativeSize.Width = width;
+            nativeSize.Height = height;
+
+            IntPtr hBitmap;
+            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
+
+            Marshal.ReleaseComObject(nativeShellItem);
+
+            if (hr == HResult.Ok) return hBitmap;
+
+            throw Marshal.GetExceptionForHR((int)hr);
+        }
+
         [ComImport]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
@@ -49,7 +135,7 @@ namespace VisualFileSorter.Helpers
             void GetDisplayName(SIGDN sigdnName, out IntPtr ppszName);
             void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
             void Compare(IShellItem psi, uint hint, out int piOrder);
-        };
+        }
 
         internal enum SIGDN : uint
         {
@@ -80,16 +166,16 @@ namespace VisualFileSorter.Helpers
             AccessDenied = unchecked((int)0x80030005)
         }
 
-        [ComImportAttribute()]
-        [GuidAttribute("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
-        [InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComImport]
+        [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         internal interface IShellItemImageFactory
         {
             [PreserveSig]
             HResult GetImage(
-            [In, MarshalAs(UnmanagedType.Struct)] NativeSize size,
-            [In] ThumbnailOptions flags,
-            [Out] out IntPtr phbm);
+                [In, MarshalAs(UnmanagedType.Struct)] NativeSize size,
+                [In] ThumbnailOptions flags,
+                [Out] out IntPtr phbm);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -98,9 +184,16 @@ namespace VisualFileSorter.Helpers
             private int width;
             private int height;
 
-            public int Width { set { width = value; } }
-            public int Height { set { height = value; } }
-        };
+            public int Width
+            {
+                set { width = value; }
+            }
+
+            public int Height
+            {
+                set { height = value; }
+            }
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
@@ -109,98 +202,6 @@ namespace VisualFileSorter.Helpers
             public byte rgbGreen;
             public byte rgbRed;
             public byte rgbReserved;
-        }
-
-        public static Bitmap GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
-        {
-            IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
-
-            try
-            {
-                // return a System.Drawing.Bitmap from the hBitmap
-                return GetBitmapFromHBitmap(hBitmap);
-            }
-            finally
-            {
-                // delete HBitmap to avoid memory leaks
-                DeleteObject(hBitmap);
-            }
-        }
-
-        public static Bitmap GetBitmapFromHBitmap(IntPtr nativeHBitmap)
-        {
-            Bitmap bmp = Bitmap.FromHbitmap(nativeHBitmap);
-
-            if (Bitmap.GetPixelFormatSize(bmp.PixelFormat) < 32)
-                return bmp;
-
-            return CreateAlphaBitmap(bmp, PixelFormat.Format32bppArgb);
-        }
-
-        public static Bitmap CreateAlphaBitmap(Bitmap srcBitmap, PixelFormat targetPixelFormat)
-        {
-            Bitmap result = new Bitmap(srcBitmap.Width, srcBitmap.Height, targetPixelFormat);
-
-            Rectangle bmpBounds = new Rectangle(0, 0, srcBitmap.Width, srcBitmap.Height);
-
-            BitmapData srcData = srcBitmap.LockBits(bmpBounds, ImageLockMode.ReadOnly, srcBitmap.PixelFormat);
-
-            bool isAlplaBitmap = false;
-
-            try
-            {
-                for (int y = 0; y <= srcData.Height - 1; y++)
-                {
-                    for (int x = 0; x <= srcData.Width - 1; x++)
-                    {
-                        Color pixelColor = Color.FromArgb(
-                            Marshal.ReadInt32(srcData.Scan0, (srcData.Stride * y) + (4 * x)));
-
-                        if (pixelColor.A > 0 & pixelColor.A < 255)
-                        {
-                            isAlplaBitmap = true;
-                        }
-
-                        result.SetPixel(x, y, pixelColor);
-                    }
-                }
-            }
-            finally
-            {
-                srcBitmap.UnlockBits(srcData);
-            }
-
-            if (isAlplaBitmap)
-            {
-                return result;
-            }
-            else
-            {
-                return srcBitmap;
-            }
-        }
-
-        private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
-        {
-            IShellItem nativeShellItem;
-            Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
-
-            if (retCode != 0)
-                throw Marshal.GetExceptionForHR(retCode);
-
-            NativeSize nativeSize = new NativeSize();
-            nativeSize.Width = width;
-            nativeSize.Height = height;
-
-            IntPtr hBitmap;
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
-
-            Marshal.ReleaseComObject(nativeShellItem);
-
-            if (hr == HResult.Ok) return hBitmap;
-
-            throw Marshal.GetExceptionForHR((int)hr);
         }
     }
 }

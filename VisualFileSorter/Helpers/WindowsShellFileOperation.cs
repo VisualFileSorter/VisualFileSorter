@@ -66,43 +66,29 @@ namespace VisualFileSorter.Helpers
             return TransferFiles(MergeFilenames(src), MergeFilenames(dest), isMove);
         }
 
-        private static unsafe bool TransferFiles(string src, string dest, bool isMove)
+        private static bool TransferFiles(string src, string dest, bool isMove)
         {
             bool success = false;
 
             SHFILEOPSTRUCT fileOp = new SHFILEOPSTRUCT();
-            fileOp.hwnd = IntPtr.Zero;// new HWND(0);
-            fileOp.hNameMappings = IntPtr.Zero;// null;
+            fileOp.hwnd = IntPtr.Zero;
+            fileOp.hNameMappings = IntPtr.Zero;
             fileOp.fFlags = FILEOP_FLAGS.FOF_NORECURSION |
                             FILEOP_FLAGS.FOF_NOCONFIRMMKDIR |
                             FILEOP_FLAGS.FOF_MULTIDESTFILES;
             fileOp.fAnyOperationsAborted = false;
-
-            //fixed (char* cSrc = src)
-            //{
-            fileOp.pFrom = src; //new PCWSTR(cSrc);
-                                //}
-
-            //fixed (char* cDest = dest)
-            //{
-            fileOp.pTo = dest; //new PCWSTR(cDest);
-            //}
+            fileOp.pFrom = src;
+            fileOp.pTo = dest; 
 
             if (isMove)
             {
                 fileOp.wFunc = FO_Func.FO_MOVE;
-                //fixed (char* cTitle = "Moving files")
-                //{
-                fileOp.lpszProgressTitle = "Moving files"; //new PCWSTR(cTitle);
-                //}
+                fileOp.lpszProgressTitle = "Moving files";
             }
             else
             {
                 fileOp.wFunc = FO_Func.FO_COPY;
-                //fixed (char* cTitle = "Copying files")
-                //{
-                fileOp.lpszProgressTitle = "Copying files"; //new PCWSTR(cTitle);
-                //}
+                fileOp.lpszProgressTitle = "Copying files";
             }
 
             // Do file operation and check success
