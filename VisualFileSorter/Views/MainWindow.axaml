@@ -3,6 +3,8 @@
         xmlns:vm="using:VisualFileSorter.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
         xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
         xmlns:local="clr-namespace:VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -200,7 +202,7 @@
           <Rectangle Fill="#2E4376" Width="2" Margin="2" />
 
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  Command="{Binding TransferFilesCmd}">
+                  Command="{Binding BuyMusicCommand}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -275,7 +277,7 @@
                       <RowDefinition Height="*"/>
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <Image Grid.Row="0" Source="{Binding Image}" />
+                    <Image Grid.Row="0" Source="{Binding SmallImage}" />
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
                              Foreground="White"
@@ -310,7 +312,7 @@
           </DrawingPresenter>
         </Button>
 
-        <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.Image}" />
+        <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.BigImage}" />
         <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}" 
                Foreground="White"
                HorizontalAlignment="Center" />
@@ -351,6 +353,19 @@
                       <RowDefinition Height="*"/>
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
+
+                    <Grid.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Remove" 
+                                  IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
+                                  CommandParameter="{Binding}"
+                                  Command="{Binding $parent[ListBox].DataContext.RemoveSortFolderCmd}"/>
+                        <MenuItem Header="Remap"
+                                  IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
+                                  CommandParameter="{Binding}"
+                                  Command="{Binding $parent[ListBox].DataContext.RemapSortFolderLocationCmd}"/>
+                      </ContextMenu>
+                    </Grid.ContextMenu>
 
                     <DrawingPresenter Grid.Row="0" ZIndex="0"
                                       HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -399,6 +414,7 @@
 
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
+                             Name="SortFolderShortNameLabel"
                              Foreground="White"
                              HorizontalContentAlignment="Center"
                              HorizontalAlignment="Center"
@@ -409,8 +425,6 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
-           
-            
           </Grid>
         </Border>
       </Grid>

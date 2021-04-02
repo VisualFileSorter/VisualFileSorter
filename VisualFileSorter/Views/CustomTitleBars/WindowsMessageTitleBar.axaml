@@ -1,0 +1,153 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VisualFileSorter.Views.CustomTitleBars.WindowsMessageTitleBar"
+             DockPanel.Dock="Top">
+  <StackPanel>
+    <Grid>
+      <!--The proper way would be not to use white as default, but somehow retrieve the users' window chrome color.-->
+      <DockPanel Background="{DynamicResource WindowsTitleBarBackground}"
+                 IsHitTestVisible="False"
+                 Name="TitleBarBackground"></DockPanel>
+      <DockPanel Name="TitleBar">
+        <StackPanel Orientation="Horizontal"
+                    DockPanel.Dock="Left"
+                    Spacing="0">
+
+          <Grid Name="WindowIcon"
+                Width="20" Height="20"
+                VerticalAlignment="Center"
+                Margin="5,0,3,0">
+            <DrawingPresenter>
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M2,8C2,4.687 4.687,2 8,2 11.313,2 14,4.687 14,8 14,11.313 11.313,14 8,14 4.687,14 2,11.313 2,8" />
+                  <GeometryDrawing Brush="#FFE51300" Geometry="F1M11,10L10,11 8,9 6,11 5,10 7,7.973 5,6 6,5 8,7 10,5 11,6 9,7.973z M8,3C5.238,3 3,5.238 3,8 3,10.762 5.238,13 8,13 10.762,13 13,10.762 13,8 13,5.238 10.762,3 8,3" />
+                  <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1M11,6L10,5 8,7 6,5 5,6 7,7.973 5,10 6,11 8,9 10,11 11,10 9,7.973z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+
+            <DrawingPresenter>
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M0,8.0005C0,3.5825 3.582,0.000499999999998835 8,0.000499999999998835 12.418,0.000499999999998835 16,3.5825 16,8.0005 16,12.4185 12.418,16.0005 8,16.0005 3.582,16.0005 0,12.4185 0,8.0005" />
+                  <GeometryDrawing Brush="#FF1AA1E2" Geometry="F1M9,5L7,5 7,3 9,3z M9,13L7,13 7,6 9,6z M8,1C4.135,1 1,4.135 1,8 1,11.865 4.135,15 8,15 11.865,15 15,11.865 15,8 15,4.135 11.865,1 8,1" />
+                  <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1M7,5L9,5 9,3 7,3z M7,6L9,6 9,13 7,13z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+
+            <DrawingPresenter>
+              <DrawingPresenter.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                  <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M7.0002,-0.000199999999999534L0.000200000000000422,13.9998 2.0002,15.9998 14.0002,15.9998 16.0002,13.9998 9.0002,-0.000199999999999534z" />
+                  <GeometryDrawing Brush="#FFFFCC00" Geometry="F1M9,10L7,10 7,5 9,5z M9,13L7,13 7,11 9,11z M8.382,1L7.618,1 1.217,13.803 2.5,15 13.5,15 14.783,13.803z" />
+                  <GeometryDrawing Brush="#FF000000" Geometry="F1M9,10L7,10 7,5 9,5z" />
+                  <GeometryDrawing Brush="#FF000000" Geometry="F1M9,11L7,11 7,13 9,13z" />
+                </DrawingGroup>
+              </DrawingPresenter.Drawing>
+            </DrawingPresenter>
+          </Grid>
+
+
+          
+          <TextBlock Text="Add message binding"
+                     FontSize="12"
+                     Foreground="Black"
+                     VerticalAlignment="Center"
+                     IsHitTestVisible="False"
+                     Name="SystemChromeTitle"></TextBlock>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="0">
+          <Button Width="46"
+                  Height="30"
+                  HorizontalContentAlignment="Center"
+                  BorderThickness="0"
+                  IsVisible="False"
+                  Name="MinimizeButton"
+                  ToolTip.Tip="Minimize">
+            <Button.Resources>
+              <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+            </Button.Resources>
+            <Button.Styles>
+              <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#44AAAAAA"/>
+              </Style>
+              <Style Selector="Button:not(:pointerover) /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="Transparent"/>
+              </Style>
+            </Button.Styles>
+            <Path Margin="10,0,10,0"
+                  Stretch="Uniform"
+                  Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                  Data="M2048 1229v-205h-2048v205h2048z"></Path>
+          </Button>
+
+          <Button Width="46"
+                  VerticalAlignment="Stretch"
+                  BorderThickness="0"
+                  IsVisible="False"
+                  Name="MaximizeButton">
+            <ToolTip.Tip>
+              <ToolTip Content="Maximize"
+                       Name="MaximizeToolTip"></ToolTip>
+            </ToolTip.Tip>
+
+            <Button.Resources>
+              <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+            </Button.Resources>
+            <Button.Styles>
+              <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#44AAAAAA"/>
+              </Style>
+              <Style Selector="Button:not(:pointerover) /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="Transparent"/>
+              </Style>
+            </Button.Styles>
+            <Path Margin="10,0,10,0"
+                  Stretch="Uniform"
+                  Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                  Name="MaximizeIcon"
+                  Data="M2048 2048v-2048h-2048v2048h2048zM1843 1843h-1638v-1638h1638v1638z"></Path>
+          </Button>
+
+          <Button Width="46"
+                  Height="30"
+                  VerticalAlignment="Stretch"
+                  BorderThickness="0"
+                  Name="CloseButton"
+                  ToolTip.Tip="Close">
+            <Button.Resources>
+              <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+            </Button.Resources>
+            <Button.Styles>
+              <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="Red"/>
+              </Style>
+              <Style Selector="Button:not(:pointerover) /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="Transparent"/>
+              </Style>
+              <Style Selector="Button:pointerover > Path">
+                <Setter Property="Fill" Value="White"/>
+              </Style>
+              <Style Selector="Button:not(:pointerover) > Path">
+                <Setter Property="Fill" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+              </Style>
+            </Button.Styles>
+            <Path Margin="10,0,10,0"
+                  Stretch="Uniform"
+                  Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z"></Path>
+          </Button>
+
+        </StackPanel>
+      </DockPanel>
+    </Grid>
+  </StackPanel>
+</UserControl>

@@ -4,6 +4,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.ReactiveUI;
+using ReactiveUI;
 
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,10 +13,11 @@ using System.Runtime.InteropServices;
 
 using VisualFileSorter.ViewModels;
 using VisualFileSorter.Helpers;
+using System.Threading.Tasks;
 
 namespace VisualFileSorter.Views
 {
-    public class MainWindow : Window
+    public class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         private bool isDefaultStyle = false;
         private bool isDarkTheme = false;
@@ -25,7 +28,6 @@ namespace VisualFileSorter.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
-
 
             // Do not use a custom title bar on Linux, because there are too many possible options.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) == true)
@@ -45,6 +47,17 @@ namespace VisualFileSorter.Views
 
             Application.Current.Styles[1] = App.FluentLight;
             Application.Current.Resources["WindowsTitleBarBackground"] = new SolidColorBrush { Color = new Color(255, 204, 213, 240) };
+
+            this.WhenActivated(d => d(ViewModel.ShowDialog.RegisterHandler(DoShowDialogAsync)));
+        }
+
+        private async Task DoShowDialogAsync(InteractionContext<MainWindowViewModel, MessageWindowViewModel?> interaction)
+        {
+            var dialog = new MessageWindow();
+            dialog.DataContext = interaction.Input;
+
+            var result = await dialog.ShowDialog<MessageWindowViewModel?>(this);
+            interaction.SetOutput(result);
         }
 
         private void SetLightTheme(object sender, Avalonia.Interactivity.RoutedEventArgs e)
