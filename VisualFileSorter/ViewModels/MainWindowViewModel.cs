@@ -37,13 +37,13 @@ namespace VisualFileSorter.ViewModels
             AddSortDirectoryCmd = ReactiveCommand.Create(AddSortDirectory);
             OpenCurrentFileCmd = ReactiveCommand.Create(OpenCurrentFile);
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
-            RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(EditSortFolderLocation);
+            RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(RemapSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
 
             // MessageBox commands
-            OpenMissingSortFolderDialogCmd = ReactiveCommand.Create(OpenMissingSortFolderDialog);
+            TestMsgCmd = ReactiveCommand.Create(TestMsg);
             CloseMsgBoxCmd = ReactiveCommand.Create<Window>(CloseMsgBox);
-            ShowDialog = new Interaction<MainWindowViewModel, MessageWindowViewModel?>();
+            ShowDialog = new Interaction<MainWindowViewModel, Unit>();
         }
 
         public ReactiveCommand<Unit, Unit> ImportFilesCmd { get; }
@@ -55,9 +55,9 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
 
         // MessageBox commands
-        public ReactiveCommand<Unit, Unit> OpenMissingSortFolderDialogCmd { get; }
+        public ReactiveCommand<Unit, Unit> TestMsgCmd { get; }
         public ReactiveCommand<Window, Unit> CloseMsgBoxCmd { get; }
-        public Interaction<MainWindowViewModel, MessageWindowViewModel?> ShowDialog { get; }
+        public Interaction<MainWindowViewModel, Unit> ShowDialog { get; }
 
 
         // TODO check that file hasn't already been sorted or added to the queue
@@ -86,7 +86,7 @@ namespace VisualFileSorter.ViewModels
                                                                                         "xls", "xlsx", "ppt", "pptx", "txt"} });
 
             var result = await dlg.ShowAsync(mHostWindow);
-            if (result != null)
+            if (result != null && 0 < result.Count())
             {
                 // TODO disallow adding folders?
                 List<FileQueueItem> fileItems = new List<FileQueueItem>();
@@ -152,8 +152,78 @@ namespace VisualFileSorter.ViewModels
         
         public async void OpenMissingSortFolderDialog()
         {
-            var store = new MainWindowViewModel(mHostWindow);
-            var result = await ShowDialog.Handle(store);
+            // Set window properties
+            MessageWindowTitle = "Error";
+            MessageWindowWidth = 300;
+            MessageWindowHeight = 120;
+            MessageWindowErrorIcon = true;
+            MessageWindowWarningIcon = false;
+            MessageWindowInfoIcon = false;
+
+            MB_MissingSortFolderVisible = true;
+            MB_RemoveSortFolderVisible = false;
+            MB_MissingTransferFilesVisible = false;
+            MB_BadFileTransferVisible = false;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(this);
+        }
+
+        public async void OpenRemoveSortFolderDialog()
+        {
+            // Set window properties
+            MessageWindowTitle = "Warning";
+            MessageWindowWidth = 410;
+            MessageWindowHeight = 135;
+            MessageWindowErrorIcon = false;
+            MessageWindowWarningIcon = true;
+            MessageWindowInfoIcon = false;
+
+            MB_MissingSortFolderVisible = false;
+            MB_RemoveSortFolderVisible = true;
+            MB_MissingTransferFilesVisible = false;
+            MB_BadFileTransferVisible = false;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(this);
+        }
+
+        public async void OpenMissingTransferFilesDialog()
+        {
+            // Set window properties
+            MessageWindowTitle = "Warning";
+            MessageWindowWidth = 300;
+            MessageWindowHeight = 267;
+            MessageWindowErrorIcon = false;
+            MessageWindowWarningIcon = true;
+            MessageWindowInfoIcon = false;
+
+            MB_MissingSortFolderVisible = false;
+            MB_RemoveSortFolderVisible = false;
+            MB_MissingTransferFilesVisible = true;
+            MB_BadFileTransferVisible = false;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(this);
+        }
+
+        public async void OpenBadFileTransferDialog()
+        {
+            // Set window properties
+            MessageWindowTitle = "Information";
+            MessageWindowWidth = 315;
+            MessageWindowHeight = 120;
+            MessageWindowErrorIcon = false;
+            MessageWindowWarningIcon = false;
+            MessageWindowInfoIcon = true;
+
+            MB_MissingSortFolderVisible = false;
+            MB_RemoveSortFolderVisible = false;
+            MB_MissingTransferFilesVisible = false;
+            MB_BadFileTransferVisible = true;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(this);
         }
 
         // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap
@@ -169,29 +239,48 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        private void TestMsg()
+        {
+            OpenBadFileTransferDialog();
+        }
+
         private void TransferFiles()
         {
             List<string> allSrcFiles = new List<string>();
             List<string> allDestFiles = new List<string>();
 
             // Get all source file locations
+            bool allSortDirsExist = true;
             foreach (var sortFolderItem in SortFolderQueue)
             {
-                foreach (var sortSrcFileItem in sortFolderItem.SortSrcFiles)
+                if (!Directory.Exists(sortFolderItem.FullName))
                 {
-                    allSrcFiles.Add(sortSrcFileItem);
-                    allDestFiles.Add(Path.Combine(sortFolderItem.FullName, Path.GetFileName(sortSrcFileItem)));
+                    sortFolderItem.FolderExists = false;
+                    allSortDirsExist = false;
+                }
+                else
+                {
+                    foreach (var sortSrcFileItem in sortFolderItem.SortSrcFiles)
+                    {
+                        allSrcFiles.Add(sortSrcFileItem);
+                        allDestFiles.Add(Path.Combine(sortFolderItem.FullName, Path.GetFileName(sortSrcFileItem)));
+                    }
                 }
             }
 
+            if (!allSortDirsExist)
+            {
+                OpenMissingSortFolderDialog();
+                return;
+            }
+
             // Make sure all source files still exist
-            // Make sure destination folders still exist
             // Make sure source files and dest lists are not empty
             // Double click on folder name on right to edit sort folder location
             // Change label to red and flashing when folder does not exist
             // Add tooltip that says folder no longer exists
 
-            Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
+            //Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
         }
 
         // TODO Prevent adding the same directory twice
@@ -207,7 +296,6 @@ namespace VisualFileSorter.ViewModels
                 SortFolder tempFolderQueueItem = new SortFolder();
                 tempFolderQueueItem.FullName = result;
                 tempFolderQueueItem.Name = Path.GetFileName(result);
-                // TODO look into fast observable collection and enqueue a range of files
                 SortFolderQueue.Enqueue(tempFolderQueueItem);
             }
         }
@@ -230,10 +318,13 @@ namespace VisualFileSorter.ViewModels
             {
                 foundSortFolder.SortSrcFiles.Add(CurrentFileQueueItem.FullName);
                 CurrentFileQueueItem = FileQueue.Dequeue();
-                int THUMB_SIZE = 256;
-                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                if (CurrentFileQueueItem != null)
+                {
+                    int THUMB_SIZE = 256;
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                }
             }
         }
 
@@ -282,6 +373,12 @@ namespace VisualFileSorter.ViewModels
 
         public void RemoveSortFolder(SortFolder sortFolder)
         {
+            // TODO message dialog on what to do with un-transfered files
+            if (0 < sortFolder?.SortSrcFiles.Count())
+            {
+
+            }
+
             SortFolderQueue.GetCollection()?.Remove(sortFolder);
         }
 
@@ -290,7 +387,7 @@ namespace VisualFileSorter.ViewModels
             msgBoxWindow?.Close();
         }
 
-        public async void EditSortFolderLocation(SortFolder sortFolder)
+        public async void RemapSortFolderLocation(SortFolder sortFolder)
         {
             var dlg = new OpenFolderDialog();
             dlg.Title = "Select Sort Directory";
@@ -300,6 +397,7 @@ namespace VisualFileSorter.ViewModels
             if (!string.IsNullOrWhiteSpace(result))
             {
                 sortFolder.FullName = result;
+                sortFolder.FolderExists = true;
                 sortFolder.Name = Path.GetFileName(result);
             }
         }
@@ -410,5 +508,79 @@ namespace VisualFileSorter.ViewModels
         private Window mHostWindow;
         private bool mIsMove = true;
         private bool mEditShortcutButtonsEnabled = true;
+
+        #region Message Window Properties
+
+        public string MessageWindowTitle
+        {
+            get => mMessageWindowTitle;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowTitle, value);
+        }
+
+        public int MessageWindowWidth
+        {
+            get => mMessageWindowWidth;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowWidth, value);
+        }
+
+        public int MessageWindowHeight
+        {
+            get => mMessageWindowHeight;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowHeight, value);
+        }
+
+        public bool MessageWindowErrorIcon
+        {
+            get => mMessageWindowErrorIcon;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowErrorIcon, value);
+        }
+
+        public bool MessageWindowWarningIcon
+        {
+            get => mMessageWindowWarningIcon;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowWarningIcon, value);
+        }
+
+        public bool MessageWindowInfoIcon
+        {
+            get => mMessageWindowInfoIcon;
+            set => this.RaiseAndSetIfChanged(ref mMessageWindowInfoIcon, value);
+        }
+
+        public bool MB_MissingSortFolderVisible
+        {
+            get => mMB_MissingSortFolderVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingSortFolderVisible, value);
+        }
+
+        public bool MB_RemoveSortFolderVisible
+        {
+            get => mMB_RemoveSortFolderVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_RemoveSortFolderVisible, value);
+        }
+
+        public bool MB_MissingTransferFilesVisible
+        {
+            get => mMB_MissingTransferFilesVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingTransferFilesVisible, value);
+        }
+
+        public bool MB_BadFileTransferVisible
+        {
+            get => mMB_BadFileTransferVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_BadFileTransferVisible, value);
+        }
+
+        private string mMessageWindowTitle = String.Empty;
+        private int mMessageWindowWidth = 300;
+        private int mMessageWindowHeight = 120;
+        private bool mMessageWindowErrorIcon = false;
+        private bool mMessageWindowWarningIcon = false;
+        private bool mMessageWindowInfoIcon = false;
+        private bool mMB_MissingSortFolderVisible = false;
+        private bool mMB_RemoveSortFolderVisible = false;
+        private bool mMB_MissingTransferFilesVisible = false;
+        private bool mMB_BadFileTransferVisible = false;
+        #endregion Message Window Properties
     }
 }

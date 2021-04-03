@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using VisualFileSorter.ViewModels;
 using VisualFileSorter.Helpers;
 using System.Threading.Tasks;
+using System.Reactive;
 
 namespace VisualFileSorter.Views
 {
@@ -51,12 +52,12 @@ namespace VisualFileSorter.Views
             this.WhenActivated(d => d(ViewModel.ShowDialog.RegisterHandler(DoShowDialogAsync)));
         }
 
-        private async Task DoShowDialogAsync(InteractionContext<MainWindowViewModel, MessageWindowViewModel?> interaction)
+        private async Task DoShowDialogAsync(InteractionContext<MainWindowViewModel, Unit> interaction)
         {
             var dialog = new MessageWindow();
             dialog.DataContext = interaction.Input;
 
-            var result = await dialog.ShowDialog<MessageWindowViewModel?>(this);
+            var result = await dialog.ShowDialog<Unit>(this);
             interaction.SetOutput(result);
         }
 

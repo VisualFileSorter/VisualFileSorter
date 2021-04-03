@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 
@@ -8,7 +9,7 @@ using VisualFileSorter.ViewModels;
 
 namespace VisualFileSorter.Views
 {
-    public class MessageWindow : ReactiveWindow<MessageWindowViewModel>
+    public class MessageWindow : Window
     {
         public MessageWindow()
         {
