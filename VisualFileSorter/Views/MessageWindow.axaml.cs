@@ -1,15 +1,22 @@
+using System;
+using System.Reactive;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
+using ReactiveUI;
 
+using VisualFileSorter.Helpers;
 using VisualFileSorter.ViewModels;
 
 namespace VisualFileSorter.Views
 {
-    public class MessageWindow : Window
+    public class MessageWindow : ReactiveWindow<MessageWindowViewModel>
     {
         public MessageWindow()
         {
@@ -29,6 +36,10 @@ namespace VisualFileSorter.Views
                             this.OffScreenMargin.Top,
                             this.OffScreenMargin.Right,
                             this.OffScreenMargin.Bottom);
+
+            this.WhenActivated(d => d(ViewModel.QueueCmd.Subscribe(Close)));
+            this.WhenActivated(d => d(ViewModel.OkCmd.Subscribe(Close)));
+            this.WhenActivated(d => d(ViewModel.CancelCmd.Subscribe(Close)));
         }
 
 
@@ -37,6 +48,18 @@ namespace VisualFileSorter.Views
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.SystemChrome;
             ExtendClientAreaTitleBarHeightHint = -1;
             ExtendClientAreaToDecorationsHint = false;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            Keyboard.Keys.Add(e.Key);
+            base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            Keyboard.Keys.Remove(e.Key);
+            base.OnKeyUp(e);
         }
 
         private void InitializeComponent()

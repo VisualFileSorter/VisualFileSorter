@@ -1,20 +1,16 @@
+using System.Reactive;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices;
-
-using VisualFileSorter.ViewModels;
 using VisualFileSorter.Helpers;
-using System.Threading.Tasks;
-using System.Reactive;
+using VisualFileSorter.ViewModels;
 
 namespace VisualFileSorter.Views
 {
@@ -52,49 +48,13 @@ namespace VisualFileSorter.Views
             this.WhenActivated(d => d(ViewModel.ShowDialog.RegisterHandler(DoShowDialogAsync)));
         }
 
-        private async Task DoShowDialogAsync(InteractionContext<MainWindowViewModel, Unit> interaction)
+        private async Task DoShowDialogAsync(InteractionContext<MessageWindowViewModel, DialogResultViewModel?> interaction)
         {
             var dialog = new MessageWindow();
             dialog.DataContext = interaction.Input;
 
-            var result = await dialog.ShowDialog<Unit>(this);
+            var result = await dialog.ShowDialog<DialogResultViewModel?>(this);
             interaction.SetOutput(result);
-        }
-
-        private void SetLightTheme(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            Cursor = new Cursor(StandardCursorType.Wait);
-            Application.Current.Styles[1] = isDefaultStyle ? App.DefaultLight : App.FluentLight;
-            Application.Current.Resources["MacOsTitleBarBackground"] = new SolidColorBrush { Color = new Color(255, 222, 225, 230) };
-            Application.Current.Resources["MacOsWindowTitleColor"] = new SolidColorBrush { Color = new Color(255, 77, 77, 77) };
-            Cursor = new Cursor(StandardCursorType.Arrow);
-            isDarkTheme = false;
-        }
-
-        private void SetDarkTheme(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            Cursor = new Cursor(StandardCursorType.Wait);
-            Application.Current.Styles[1] = isDefaultStyle ? App.DefaultDark : App.FluentDark;
-            Application.Current.Resources["MacOsTitleBarBackground"] = new SolidColorBrush { Color = new Color(255, 62, 62, 64) };
-            Application.Current.Resources["MacOsWindowTitleColor"] = new SolidColorBrush { Color = new Color(255, 153, 158, 161) };
-            Cursor = new Cursor(StandardCursorType.Arrow);
-            isDarkTheme = true;
-        }
-
-        private void SetDefaultTheme(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            Cursor = new Cursor(StandardCursorType.Wait);
-            Application.Current.Styles[1] = isDarkTheme ? App.DefaultDark : App.DefaultLight;
-            Cursor = new Cursor(StandardCursorType.Arrow);
-            isDefaultStyle = true;
-        }
-
-        private void SetFluentTheme(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            Cursor = new Cursor(StandardCursorType.Wait);
-            Application.Current.Styles[1] = isDarkTheme ? App.FluentDark : App.FluentLight;
-            Cursor = new Cursor(StandardCursorType.Arrow);
-            isDefaultStyle = false;
         }
 
         private void UseNativeTitleBar()

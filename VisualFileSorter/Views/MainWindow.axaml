@@ -184,7 +184,7 @@
           </Button>
 
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  Command="{Binding TestMsgCmd}">
+                  Command="{Binding SetCancelOperationCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
