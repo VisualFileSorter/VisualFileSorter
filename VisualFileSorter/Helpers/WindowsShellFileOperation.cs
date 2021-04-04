@@ -8,7 +8,6 @@ using System.Text;
 
 namespace VisualFileSorter.Helpers
 {
-    // TODO Handle case where if a source file is missing then the whole operation fails
     public static class WindowsShellFileOperation
     {
         [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
