@@ -121,7 +121,6 @@
         </ControlTemplate>
       </Setter>
     </Style>
-
     </Styles>
   </Window.Styles>
 
@@ -146,6 +145,7 @@
       <!--Ribbon-->
       <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="#CCD5F0">
         <StackPanel Orientation="Horizontal">
+          <!--Open Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
@@ -159,6 +159,7 @@
             </DrawingPresenter>
           </Button>
 
+          <!--Save Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
@@ -172,8 +173,10 @@
             </DrawingPresenter>
           </Button>
 
+          <!--Seperator-->
           <Rectangle Fill="#2E4376" Width="2" Margin="2"/>
 
+          <!--Undo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding UndoEnabled}"
                   Command="{Binding UndoCmd}">
@@ -198,9 +201,9 @@
                 </DrawingPresenter.Drawing>
               </DrawingPresenter>
             </Grid>
-
           </Button>
 
+          <!--Redo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding RedoEnabled}"
                   Command="{Binding RedoCmd}">
@@ -225,11 +228,12 @@
                 </DrawingPresenter.Drawing>
               </DrawingPresenter>
             </Grid>
-
           </Button>
 
+          <!--Seperator-->
           <Rectangle Fill="#2E4376" Width="2" Margin="2" />
 
+          <!--Transfer Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   Command="{Binding TransferFilesCmd}">
             <DrawingPresenter Width="30" Height="30">
@@ -245,6 +249,7 @@
             </DrawingPresenter>
           </Button>
 
+          <!--Move/Copy Ribbon RadioButtons-->
           <Viewbox Margin="5,0,0,0">
             <Grid>
               <Grid.RowDefinitions>
@@ -259,6 +264,7 @@
             </Grid>
           </Viewbox>
 
+          <!--Ribbon ProgressBar-->
           <Grid IsVisible="{Binding TransferProgBarVis}">
             <Grid.RowDefinitions>
               <RowDefinition Height="*"/>
@@ -270,6 +276,7 @@
         </StackPanel>
       </Grid>
 
+      <!--Ribbon Group TextBlocks-->
       <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Background="#CCD5F0">
         <Border BorderThickness="0,0,0,2" BorderBrush="#2E4376">
           <StackPanel Orientation="Horizontal">
@@ -282,6 +289,7 @@
         </Border>
       </Grid>
 
+      <!--Import Queue-->
       <Grid Grid.Column="0" Grid.Row="2" >
         <Border BorderThickness="0,0,2,0" BorderBrush="#2E4376">
           <Grid>
@@ -290,11 +298,13 @@
               <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!--Import Button-->
             <Button Grid.Row="0" Content="Import" Classes="VFSButton"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     Command="{Binding ImportFilesCmd}"/>
-            
+
+            <!--Import Queue-->
             <ListBox
                  Items="{Binding FileQueue}"
                  Grid.Row="1"
@@ -330,6 +340,7 @@
         </Border>
       </Grid>
 
+      <!--CurrentFileQueueItem-->
       <Grid Grid.Column="1" Grid.Row="2" Background="#5D6B99">
         <Grid.RowDefinitions>
           <RowDefinition Height="*"/>
@@ -359,6 +370,7 @@
       </Grid>
 
 
+      <!--SortFolder Queue-->
       <Grid Grid.Column="2" Grid.Row="2">
         <Border BorderThickness="2,0,0,0" BorderBrush="#2E4376">
           <Grid>
@@ -367,12 +379,13 @@
               <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-
+            <!--Add Sort Directory Button-->
             <Button Grid.Row="0" Content="Add Sort Directory" Classes="VFSButton"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     Command="{Binding AddSortDirectoryCmd}"/>
 
+            <!--SortFolder Queue-->
             <ListBox
                  Items="{Binding SortFolderQueue}"
                  Grid.Row="1"
@@ -394,6 +407,7 @@
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
 
+                    <!--SortFolder Context Menus-->
                     <Grid.ContextMenu>
                       <ContextMenu>
                         <MenuItem Header="Remove" 
@@ -407,6 +421,7 @@
                       </ContextMenu>
                     </Grid.ContextMenu>
 
+                    <!--SortFolder Icon-->
                     <DrawingPresenter Grid.Row="0" ZIndex="0"
                                       HorizontalAlignment="Center" VerticalAlignment="Center">
                       <DrawingPresenter.Drawing>
@@ -418,6 +433,7 @@
                       </DrawingPresenter.Drawing>
                     </DrawingPresenter>
 
+                    <!--SortFolder Shortcut label and button-->
                     <Viewbox Grid.Row="0"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center"
@@ -450,6 +466,8 @@
                                 Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
                       </Grid>
                     </Viewbox>
+
+                    <!--SortFolder Name Label-->
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <StackPanel Orientation="Horizontal">
                         <DrawingPresenter HorizontalAlignment="Center"
@@ -472,7 +490,6 @@
                             VerticalAlignment="Center"
                             ToolTip.Tip="{Binding FullName}"/>
                       </StackPanel>
-                     
                     </Viewbox>
                   </Grid>
                 </DataTemplate>
@@ -481,10 +498,6 @@
           </Grid>
         </Border>
       </Grid>
-
     </Grid>
   </DockPanel>
-
-
-
 </Window>
