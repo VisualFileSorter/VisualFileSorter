@@ -41,6 +41,7 @@ namespace VisualFileSorter.ViewModels
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
             RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(RemapSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
+            RemoveFileCmd = ReactiveCommand.Create<FileQueueItem>(RemoveFile);
             UndoCmd = ReactiveCommand.Create(Undo);
             RedoCmd = ReactiveCommand.Create(Redo);
 
@@ -56,6 +57,7 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
+        public ReactiveCommand<FileQueueItem, Unit> RemoveFileCmd { get; }
         public ReactiveCommand<Unit, Unit> UndoCmd { get; }
         public ReactiveCommand<Unit, Unit> RedoCmd { get; }
 
@@ -410,6 +412,16 @@ namespace VisualFileSorter.ViewModels
             return null;
         }
 
+        // Removes File from file queue
+        public void RemoveFile(FileQueueItem fileQueueItem)
+        {
+            // Remove the FileQueueItem
+            if (fileQueueItem != null)
+            {
+                FileQueue.GetCollection()?.Remove(fileQueueItem);
+            }
+        }
+
         // Removes a SortFolder
         public async void RemoveSortFolder(SortFolder sortFolder)
         {
@@ -700,7 +712,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
 
             // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
+            await ShowDialog.Handle(messageVM);
         }
 
         // Display warning that the removed sort folder has/had un-transferred files
@@ -725,7 +737,14 @@ namespace VisualFileSorter.ViewModels
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
-            return result.DiaResult;
+            if (result != null)
+            {
+                return result.DiaResult;
+            }
+            else
+            {
+                return DialogResult.Cancel;
+            }
         }
 
         // Display a warning that un-transferred files no longer exist
@@ -751,7 +770,14 @@ namespace VisualFileSorter.ViewModels
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
-            return result.DiaResult;
+            if (result != null)
+            {
+                return result.DiaResult;
+            }
+            else
+            {
+                return DialogResult.Cancel;
+            }
         }
 
         // Display information that something went wrong with the shell moving/copying of files
@@ -800,7 +826,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
 
             // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
+            await ShowDialog.Handle(messageVM);
         }
 
         // Display information that the shortcut already exists
@@ -824,7 +850,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_ShortcutAlreadyExistsVisible = true;
 
             // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
+            await ShowDialog.Handle(messageVM);
         }
 
         #endregion Show MessageBox Methods

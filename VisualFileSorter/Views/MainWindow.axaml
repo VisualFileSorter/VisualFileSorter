@@ -20,107 +20,195 @@
 
   <Window.Styles>
     <Styles>
-    <Style Selector="Label.Flashing">
-      <Style.Animations>
-        <Animation Duration="0:0:2" IterationCount="INFINITE">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0.0"/>
-          </KeyFrame>
-          <KeyFrame Cue="50%">
-            <Setter Property="Opacity" Value="1.0"/>
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="0.0"/>
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
+      <Style Selector="Label.Flashing">
+        <Style.Animations>
+          <Animation Duration="0:0:2" IterationCount="INFINITE">
+            <KeyFrame Cue="0%">
+              <Setter Property="Opacity" Value="0.0"/>
+            </KeyFrame>
+            <KeyFrame Cue="50%">
+              <Setter Property="Opacity" Value="1.0"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Opacity" Value="0.0"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
 
-    <Style Selector="Button.VFSButton">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="#CCD5F0">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button.VFSButton:pointerover">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="#ECF4FF">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button.VFSButton:pressed">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="#ECF4FF">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
+      <Style Selector="Button.VFSButton">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="#CCD5F0">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+      <Style Selector="Button.VFSButton:pointerover">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="#ECF4FF">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+      <Style Selector="Button.VFSButton:pressed">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="#ECF4FF">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
 
-    <Style Selector="Button.VFSButtonTransparent">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="Transparent">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button.VFSButtonTransparent:pointerover">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="Transparent">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button.VFSButtonTransparent:pressed">
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="Transparent">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="Center"
-                              TextBlock.FontFamily="Segoe UI"
-                              TextBlock.FontSize="12"
-                              TextBlock.FontWeight="Regular"
-                              TextBlock.Foreground="Black"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
+      <Style Selector="Button.VFSButtonTransparent">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="Transparent">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+      <Style Selector="Button.VFSButtonTransparent:pointerover">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="Transparent">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+      <Style Selector="Button.VFSButtonTransparent:pressed">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="Transparent">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="Center"
+                                TextBlock.FontFamily="Segoe UI"
+                                TextBlock.FontSize="12"
+                                TextBlock.FontWeight="Regular"
+                                TextBlock.Foreground="Black"/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+
+      <Styles.Resources>
+        <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+      </Styles.Resources>
+      <Style Selector="Button.EditShortcut">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <ContentPresenter x:Name="PART_ContentPresenter"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </ControlTemplate>
+        </Setter>
+      </Style>
+
+      <!-- PointerOverState -->
+      <Style Selector="Button.EditShortcut:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+        <Setter Property="TextBlock.Foreground" Value="White" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
+        <Setter Property="TextBlock.Foreground" Value="White" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut.accent /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentButtonBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrush}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForeground}" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPointerOver}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushPointerOver}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPointerOver}" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut.accent:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPressed}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushPressed}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut">
+        <Setter Property="RenderTransform" Value="none" />
+        <Setter Property="Transitions">
+          <Transitions>
+            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
+          </Transitions>
+        </Setter>
+      </Style>
+
+      <Style Selector="Button.EditShortcut:pressed, RepeatButton:pressed, ToggleButton:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut.accent:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
+      </Style>
+
+      <Style Selector="Button.EditShortcut /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+      </Style>
     </Styles>
   </Window.Styles>
 
@@ -146,7 +234,8 @@
       <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="#CCD5F0">
         <StackPanel Orientation="Horizontal">
           <!--Open Session Ribbon Button-->
-          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
+                   HotKey="Ctrl + O">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -160,7 +249,8 @@
           </Button>
 
           <!--Save Session Ribbon Button-->
-          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton">
+          <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
+                  HotKey="Ctrl + S">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -179,7 +269,8 @@
           <!--Undo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding UndoEnabled}"
-                  Command="{Binding UndoCmd}">
+                  Command="{Binding UndoCmd}"
+                  HotKey="Ctrl + Z">
             <Grid>
               <DrawingPresenter Width="30" Height="30" IsVisible="{Binding UndoEnabled}">
                 <DrawingPresenter.Drawing>
@@ -206,7 +297,8 @@
           <!--Redo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding RedoEnabled}"
-                  Command="{Binding RedoCmd}">
+                  Command="{Binding RedoCmd}"
+                  HotKey="Ctrl + Y">
             <Grid>
               <DrawingPresenter Width="30" Height="30" IsVisible="{Binding RedoEnabled}">
                 <DrawingPresenter.Drawing>
@@ -325,6 +417,16 @@
                       <RowDefinition Height="*"/>
                       <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
+
+                    <!--File Context Menu-->
+                    <Grid.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Remove"
+                                  CommandParameter="{Binding}"
+                                  Command="{Binding $parent[ListBox].DataContext.RemoveFileCmd}"/>
+                      </ContextMenu>
+                    </Grid.ContextMenu>
+                    
                     <Image Grid.Row="0" Source="{Binding SmallImage}" />
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
@@ -363,7 +465,7 @@
         </Button>
 
         <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.BigImage}" />
-        <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}" 
+        <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}"
                Foreground="White"
                HorizontalAlignment="Center"
                ToolTip.Tip="{Binding CurrentFileQueueItem.FullName}"/>
@@ -410,7 +512,7 @@
                     <!--SortFolder Context Menus-->
                     <Grid.ContextMenu>
                       <ContextMenu>
-                        <MenuItem Header="Remove" 
+                        <MenuItem Header="Remove"
                                   IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
                                   CommandParameter="{Binding}"
                                   Command="{Binding $parent[ListBox].DataContext.RemoveSortFolderCmd}"/>
@@ -456,11 +558,11 @@
                                Foreground="#FFF6F6F6"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
-                        
-                        <Button Grid.Row="1"
+
+                        <Button Grid.Row="1" Classes="EditShortcut"
                                 Content="{Binding ShortcutButtonContent}"
                                 IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
-                                HorizontalAlignment="Center" 
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 CommandParameter="{Binding}"
                                 Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
