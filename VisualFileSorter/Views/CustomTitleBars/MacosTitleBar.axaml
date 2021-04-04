@@ -115,7 +115,7 @@
           <TranslateTransform X="-33"
                               Y="0"></TranslateTransform>
         </StackPanel.RenderTransform>
-        <Image Source="/Assets/avalonia-logo.ico"
+        <Image Source="/Assets/VFS-logo.ico"
                Height="25"
                Width="25"></Image>
         <TextBlock Text="Visual File Sorter"

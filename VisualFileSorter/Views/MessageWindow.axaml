@@ -6,7 +6,7 @@
         xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VisualFileSorter.Views.MessageWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/VFS-logo.ico"
         Title="{Binding MessageWindowTitle}"
         Name="MessageBoxWindow"
         Width="{Binding MessageWindowWidth}" MinWidth="{Binding MessageWindowWidth}" MaxWidth="{Binding MessageWindowWidth}"
@@ -77,7 +77,8 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Below transfer files no longer exist!&#10;&#10;OK: Will transfer the files that are not missing&#10;Cancel: Cancels the transfer files operation"/>
 
-        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"/>
+        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"
+                 Text="{Binding MB_MissingTransferFilesList}"/>
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom">
@@ -119,7 +120,8 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Below import files either are on the queue&#10;or have already been sorted!"/>
 
-        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"/>
+        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"
+                 Text="{Binding MB_ImportFilesAlreadyInList}"/>
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom">
