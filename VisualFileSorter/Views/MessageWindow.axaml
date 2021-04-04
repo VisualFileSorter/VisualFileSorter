@@ -6,32 +6,146 @@
         xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VisualFileSorter.Views.MessageWindow"
-        Title="MessageWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding MessageWindowTitle}"
         Name="MessageBoxWindow"
-        Width="300" MinWidth="300" MaxWidth="300"
-        Height="120" MinHeight="120" MaxHeight="120"
+        Width="{Binding MessageWindowWidth}" MinWidth="{Binding MessageWindowWidth}" MaxWidth="{Binding MessageWindowWidth}"
+        Height="{Binding MessageWindowHeight}" MinHeight="{Binding MessageWindowHeight}" MaxHeight="{Binding MessageWindowHeight}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowStartupLocation="CenterOwner">
+  
   <DockPanel HorizontalAlignment="Stretch"
          VerticalAlignment="Stretch"
          Name="ContentWrapper">
     <titlebars:WindowsMessageTitleBar IsSeamless="False"/>
     <!--<titlebars:MacosMessageTitleBar IsSeamless="False"/>-->
     <Grid Background="#CCD5F0">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="50"/>
-      </Grid.RowDefinitions>
-      <Label HorizontalContentAlignment="Center" Content="Destionation folder(s) no longer exist!&#10;&#10;Please remap the sort folders with a&#10;red circle icon with a right-click."/>
+      
+      <!--Missing SortFolder Error-->
+      <Grid IsVisible="{Binding MB_MissingSortFolderVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Destination folder(s) no longer exist!&#10;&#10;Please remap the sort folders with a&#10;red circle icon via right-click."/>
 
-      <Button Grid.Row="1" Content="OK" 
-              HorizontalAlignment="Right"
-              VerticalAlignment="Bottom"
-              Margin="10"
-              CommandParameter="{Binding #MessageBoxWindow}" 
-              Command="{Binding MsgBoxCmd}"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom">
+          <Button Grid.Row="1" Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+      </Grid>
+
+      <!--Remove SortFolder Warning-->
+      <Grid IsVisible="{Binding MB_RemoveSortFolderVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Destination folder contains un-transferred files!&#10;&#10;Queue: Moves files back to the queue&#10;OK: SortFolder is removed and files remain in original location&#10;Cancel: Cancels the remove SortFolder operation"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+          
+          <Button Content="Queue"
+                  Margin="5"
+                  Command="{Binding QueueCmd}"/>
+
+          
+          <Button Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+
+          <Button Content="Cancel"
+                  Margin="5"
+                  Command="{Binding CancelCmd}"/>
+        </StackPanel>
+
+      </Grid>
+
+      <!--Missing transfer files Warning-->
+      <Grid IsVisible="{Binding MB_MissingTransferFilesVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="80"/>
+          <RowDefinition Height="150"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Below transfer files no longer exist!&#10;&#10;OK: Will transfer the files that are not missing&#10;Cancel: Cancels the transfer files operation"/>
+
+        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+
+          <Button Content="OK"
+                  Margin="5,5,5,10"
+                  Command="{Binding OkCmd}"/>
+
+          <Button Content="Cancel"
+                  Margin="5,5,5,10"
+                  Command="{Binding CancelCmd}"/>
+        </StackPanel>
+      </Grid>
+
+      <!--Bad File Transfer Info-->
+      <Grid IsVisible="{Binding MB_BadFileTransferVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="There was a error during the file transfer!&#10;&#10;Visual File Sorter has added the un-transferred&#10;files back into their respective SortFolder."/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+          <Button Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+
+      </Grid>
+
+      <!--Import Files Already In Warning-->
+      <Grid IsVisible="{Binding MB_ImportFilesAlreadyInVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="40"/>
+          <RowDefinition Height="150"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Below import files either are on the queue&#10;or have already been sorted!"/>
+
+        <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+
+          <Button Content="OK"
+                  Margin="5,5,5,10"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+      </Grid>
+
+      <!--Shortcut Already Exists Info-->
+      <Grid IsVisible="{Binding MB_ShortcutAlreadyExistsVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Shortcut already exists!&#10;&#10;Please select a different shortcut."/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom">
+          <Button Grid.Row="1" Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+      </Grid>
     </Grid>
   </DockPanel>
 </Window>
