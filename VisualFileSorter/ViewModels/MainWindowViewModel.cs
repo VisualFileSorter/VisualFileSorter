@@ -21,6 +21,7 @@ using VisualFileSorter.Helpers;
 
 // TODO
 // Add open and save json files
+// Add warning dialog that opening a session will replace the current session
 
 namespace VisualFileSorter.ViewModels
 {
