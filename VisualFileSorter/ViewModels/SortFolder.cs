@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace VisualFileSorter.ViewModels
 {
     public class SortFolder : QueueItem
     {
-        public List<string> SortSrcFiles
+        public ConcurrentDictionary<string, string> SortSrcFiles
         {
             get => mSortSrcFiles;
             set => this.RaiseAndSetIfChanged(ref mSortSrcFiles, value);
@@ -48,7 +49,7 @@ namespace VisualFileSorter.ViewModels
         }
 
 
-        private List<string> mSortSrcFiles = new List<string>();
+        private ConcurrentDictionary<string, string> mSortSrcFiles = new ConcurrentDictionary<string, string>();
         private KeyGesture mShortcut = null;
         private string mShortcutButtonContent = "Add Shortcut";
         private string mShortcutLabel = "            ";

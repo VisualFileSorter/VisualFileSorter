@@ -16,8 +16,6 @@ namespace VisualFileSorter.Views
 {
     public class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
-        private bool isDefaultStyle = false;
-        private bool isDarkTheme = false;
         public MainWindow()
         {
             this.InitializeComponent();

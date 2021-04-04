@@ -14,6 +14,8 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using VisualFileSorter.Helpers;
 
@@ -40,6 +42,8 @@ namespace VisualFileSorter.ViewModels
             EditShortcutCmd = ReactiveCommand.Create<SortFolder>(EditShortcut);
             RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(RemapSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
+            UndoCmd = ReactiveCommand.Create(Undo);
+            RedoCmd = ReactiveCommand.Create(Redo);
 
             // MessageBox Interaction
             ShowDialog = new Interaction<MessageWindowViewModel, DialogResultViewModel?>();
@@ -53,6 +57,8 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> EditShortcutCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
+        public ReactiveCommand<Unit, Unit> UndoCmd { get; }
+        public ReactiveCommand<Unit, Unit> RedoCmd { get; }
 
         // MessageBox Interaction
         public Interaction<MessageWindowViewModel, DialogResultViewModel?> ShowDialog { get; }
@@ -163,11 +169,15 @@ namespace VisualFileSorter.ViewModels
 
         public bool CheckForFileInSession(string fileItem)
         {
-            foreach (SortFolder sortFolderItem in SortFolderQueue)
+            lock (mSortFolderQueueLock)
             {
-                if (sortFolderItem.SortSrcFiles.Contains(fileItem))
+                foreach (SortFolder sortFolderItem in SortFolderQueue)
                 {
-                    return true;
+                    string foundFileStr = string.Empty;
+                    if (sortFolderItem.SortSrcFiles.TryGetValue(fileItem, out foundFileStr))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -377,31 +387,39 @@ namespace VisualFileSorter.ViewModels
 
         private async void TransferFiles()
         {
-            List<string> allSrcFiles = new List<string>();
-            List<string> allDestFiles = new List<string>();
+            // Clear the undo and redo buffers
+            UndoEnabled = false;
+            RedoEnabled = false;
+            mUndoBuffer = new CircularBuffer<UndoRedoItem>(30);
+            mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
 
             // Get all source file locations
+            List<string> allSrcFiles = new List<string>();
+            List<string> allDestFiles = new List<string>();
             bool allSortDirsExist = true;
             List<string> missingSrcFiles = new List<string>();
-            foreach (var sortFolderItem in SortFolderQueue)
+            lock (mSortFolderQueueLock)
             {
-                if (!Directory.Exists(sortFolderItem.FullName))
+                foreach (var sortFolderItem in SortFolderQueue)
                 {
-                    sortFolderItem.FolderExists = false;
-                    allSortDirsExist = false;
-                }
-                else
-                {
-                    foreach (var sortSrcFileItem in sortFolderItem.SortSrcFiles)
+                    if (!Directory.Exists(sortFolderItem.FullName))
                     {
-                        if (File.Exists(sortSrcFileItem))
+                        sortFolderItem.FolderExists = false;
+                        allSortDirsExist = false;
+                    }
+                    else
+                    {
+                        foreach (var sortSrcFileItem in sortFolderItem.SortSrcFiles)
                         {
-                            allSrcFiles.Add(sortSrcFileItem);
-                            allDestFiles.Add(Path.Combine(sortFolderItem.FullName, Path.GetFileName(sortSrcFileItem)));
-                        }
-                        else
-                        {
-                            missingSrcFiles.Add(sortSrcFileItem);
+                            if (File.Exists(sortSrcFileItem.Value))
+                            {
+                                allSrcFiles.Add(sortSrcFileItem.Value);
+                                allDestFiles.Add(Path.Combine(sortFolderItem.FullName, Path.GetFileName(sortSrcFileItem.Value)));
+                            }
+                            else
+                            {
+                                missingSrcFiles.Add(sortSrcFileItem.Value);
+                            }
                         }
                     }
                 }
@@ -424,12 +442,14 @@ namespace VisualFileSorter.ViewModels
 
             if (0 < allSrcFiles.Count() && 0 < allDestFiles.Count())
             {
-                foreach (var sortFolderItem in SortFolderQueue)
+                lock (mSortFolderQueueLock)
                 {
-                    sortFolderItem.SortSrcFiles.Clear();
+                    foreach (var sortFolderItem in SortFolderQueue)
+                    {
+                        sortFolderItem.SortSrcFiles.Clear();
+                    }
                 }
 
-                // TODO make thread safe
                 var _TransferTask = Task.Run(() =>
                   {
                       TransferProgBarVis = true;
@@ -440,19 +460,22 @@ namespace VisualFileSorter.ViewModels
                           {
                               if (File.Exists(allSrcFiles[i]))
                               {
-                                  SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == Path.GetDirectoryName(allDestFiles[i]));
-                                  if (foundSortFolder != null)
+                                  lock (mSortFolderQueueLock)
                                   {
-                                      foundSortFolder.SortSrcFiles.Add(allSrcFiles[i]);
-                                  }
-                                  else
-                                  {
-                                      // SortFolder was removed during transfer, Recreate it
-                                      SortFolder tempFolderQueueItem = new SortFolder();
-                                      tempFolderQueueItem.FullName = Path.GetDirectoryName(allDestFiles[i]);
-                                      tempFolderQueueItem.Name = Path.GetFileName(Path.GetDirectoryName(allDestFiles[i]));
-                                      tempFolderQueueItem.SortSrcFiles.Add(allSrcFiles[i]);
-                                      SortFolderQueue?.Enqueue(tempFolderQueueItem);
+                                      SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == Path.GetDirectoryName(allDestFiles[i]));
+                                      if (foundSortFolder != null)
+                                      {
+                                          foundSortFolder.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
+                                      }
+                                      else
+                                      {
+                                          // SortFolder was removed during transfer, Recreate it
+                                          SortFolder tempFolderQueueItem = new SortFolder();
+                                          tempFolderQueueItem.FullName = Path.GetDirectoryName(allDestFiles[i]);
+                                          tempFolderQueueItem.Name = Path.GetFileName(Path.GetDirectoryName(allDestFiles[i]));
+                                          tempFolderQueueItem.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
+                                          SortFolderQueue?.Enqueue(tempFolderQueueItem);
+                                      }
                                   }
                               }
                           }
@@ -482,18 +505,21 @@ namespace VisualFileSorter.ViewModels
             if (!string.IsNullOrWhiteSpace(result))
             {
                 // Prevent adding the same directory twice
-                foreach (SortFolder sortFolderItem in SortFolderQueue)
+                lock (mSortFolderQueueLock)
                 {
-                    if (sortFolderItem.FullName == result)
+                    foreach (SortFolder sortFolderItem in SortFolderQueue)
                     {
-                        return;
+                        if (sortFolderItem.FullName == result)
+                        {
+                            return;
+                        }
                     }
-                }
 
-                SortFolder tempFolderQueueItem = new SortFolder();
-                tempFolderQueueItem.FullName = result;
-                tempFolderQueueItem.Name = Path.GetFileName(result);
-                SortFolderQueue.Enqueue(tempFolderQueueItem);
+                    SortFolder tempFolderQueueItem = new SortFolder();
+                    tempFolderQueueItem.FullName = result;
+                    tempFolderQueueItem.Name = Path.GetFileName(result);
+                    SortFolderQueue.Enqueue(tempFolderQueueItem);
+                }
             }
         }
 
@@ -508,27 +534,133 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        private void SortFile(KeyEventArgs e)
+        private void Undo()
         {
-            SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut?.Matches(e) ?? false);
-            if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
+            if (!mUndoBuffer.IsEmpty)
             {
-                foundSortFolder.SortSrcFiles.Add(CurrentFileQueueItem.FullName);
-                CurrentFileQueueItem = FileQueue.Dequeue();
+                UndoRedoItem curUndoItem = mUndoBuffer.Back();
+                mUndoBuffer.PopBack();
+
                 if (CurrentFileQueueItem != null)
                 {
-                    try
+                    FileQueue.Enqueue(CurrentFileQueueItem);
+                }
+
+                FileQueueItem tempFileQueueItem = new FileQueueItem();
+                int THUMB_SIZE = 64;
+                int THUMB_SIZE_BIG = 256;
+                try
+                {
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                        curUndoItem.mSrcFilename, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    Bitmap thumbnailBig = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                        curUndoItem.mSrcFilename, THUMB_SIZE_BIG, THUMB_SIZE_BIG, Helpers.ThumbnailOptions.None);
+                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+                    tempFileQueueItem.BigImage = ConvertBitmap(thumbnailBig);
+                }
+                catch (Exception)
+                {
+                    // Thumbnail error, set to default error thumbnail
+                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                    tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                    tempFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                }
+
+                tempFileQueueItem.FullName = curUndoItem.mSrcFilename;
+                tempFileQueueItem.Name = Path.GetFileName(curUndoItem.mSrcFilename);
+                tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(curUndoItem.mSrcFilename));
+                CurrentFileQueueItem = tempFileQueueItem;
+
+                // Remove the entry from the SortFolder
+                lock (mSortFolderQueueLock)
+                {
+                    SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == curUndoItem.mSortFolderName);
+                    if (foundSortFolder != null)
                     {
-                        int THUMB_SIZE = 256;
-                        Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                           CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                        CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                        string foundStr = string.Empty;
+                        foundSortFolder.SortSrcFiles.TryRemove(curUndoItem.mSrcFilename, out foundStr);
                     }
-                    catch (Exception)
+                }
+
+                mRedoBuffer.PushBack(curUndoItem);
+                UndoEnabled = !mUndoBuffer.IsEmpty;
+                RedoEnabled = !mRedoBuffer.IsEmpty;
+            }
+        }
+
+        private void Redo()
+        {
+            if (!mRedoBuffer.IsEmpty)
+            {
+                UndoRedoItem curRedoItem = mRedoBuffer.Back();
+                mRedoBuffer.PopBack();
+
+                lock (mSortFolderQueueLock)
+                {
+                    SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.FullName == curRedoItem.mSortFolderName);
+                    if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
                     {
-                        // Thumbnail error, set to default error thumbnail
-                        var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                        CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                        // Make sure the CurrentFileQueueItem and curRedoItem.mSrcFilename are equal
+                        if (CurrentFileQueueItem.FullName != curRedoItem.mSrcFilename)
+                        {
+                            throw new ArgumentException("CurrentFileQueueItem.FullName does not match Redo object");
+                        }
+
+                        foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
+                        CurrentFileQueueItem = FileQueue.Dequeue();
+                        if (CurrentFileQueueItem != null)
+                        {
+                            try
+                            {
+                                int THUMB_SIZE = 256;
+                                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                            }
+                            catch (Exception)
+                            {
+                                // Thumbnail error, set to default error thumbnail
+                                var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                                CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                            }
+                        }
+                    }
+                }
+
+                mUndoBuffer.PushBack(curRedoItem);
+                UndoEnabled = !mUndoBuffer.IsEmpty;
+                RedoEnabled = !mRedoBuffer.IsEmpty;
+            }
+        }
+
+        private void SortFile(KeyEventArgs e)
+        {
+            lock (mSortFolderQueueLock)
+            {
+                SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut?.Matches(e) ?? false);
+                if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
+                {
+                    mUndoBuffer.PushBack(new UndoRedoItem(CurrentFileQueueItem.FullName, foundSortFolder.FullName));
+                    UndoEnabled = !mUndoBuffer.IsEmpty;
+                    RedoEnabled = !mRedoBuffer.IsEmpty;
+
+                    foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
+                    CurrentFileQueueItem = FileQueue.Dequeue();
+                    if (CurrentFileQueueItem != null)
+                    {
+                        try
+                        {
+                            int THUMB_SIZE = 256;
+                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                               CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                            CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                        }
+                        catch (Exception)
+                        {
+                            // Thumbnail error, set to default error thumbnail
+                            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                            CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                        }
                     }
                 }
             }
@@ -582,15 +714,21 @@ namespace VisualFileSorter.ViewModels
             // Message dialog on what to do with un-transfered files
             if (0 < sortFolder?.SortSrcFiles.Count())
             {
+                // Clear the undo and redo buffers
+                UndoEnabled = false;
+                RedoEnabled = false;
+                mUndoBuffer = new CircularBuffer<UndoRedoItem>(30);
+                mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
+
                 DialogResult result = await OpenRemoveSortFolderDialog();
                 switch (result)
                 {
                     // Add files back into the queue
                     case DialogResult.Queue:
                         List<FileQueueItem> fileItems = new List<FileQueueItem>();
-                        foreach (string fileItem in sortFolder?.SortSrcFiles)
+                        foreach (var fileItem in sortFolder?.SortSrcFiles)
                         {
-                            if (File.Exists(fileItem))
+                            if (File.Exists(fileItem.Value))
                             {
                                 FileQueueItem tempFileQueueItem = new FileQueueItem();
 
@@ -598,7 +736,7 @@ namespace VisualFileSorter.ViewModels
                                 {
                                     int THUMB_SIZE = 64;
                                     Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                                       fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                                       fileItem.Value, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
                                     tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
                                 }
                                 catch (Exception)
@@ -608,9 +746,9 @@ namespace VisualFileSorter.ViewModels
                                     tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
                                 }
 
-                                tempFileQueueItem.FullName = fileItem;
-                                tempFileQueueItem.Name = Path.GetFileName(fileItem);
-                                tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
+                                tempFileQueueItem.FullName = fileItem.Value;
+                                tempFileQueueItem.Name = Path.GetFileName(fileItem.Value);
+                                tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem.Value));
 
                                 fileItems.Add(tempFileQueueItem);
                             }
@@ -640,7 +778,10 @@ namespace VisualFileSorter.ViewModels
 
                     // Remove the SortFolder
                     case DialogResult.OK:
-                        SortFolderQueue.GetCollection()?.Remove(sortFolder);
+                        lock (mSortFolderQueueLock)
+                        {
+                            SortFolderQueue.GetCollection()?.Remove(sortFolder);
+                        }
                         break;
 
                     // Cancel the operation
@@ -654,7 +795,10 @@ namespace VisualFileSorter.ViewModels
             // Remove the SortFolder
             if (sortFolder != null)
             {
-                SortFolderQueue.GetCollection()?.Remove(sortFolder);
+                lock (mSortFolderQueueLock)
+                {
+                    SortFolderQueue.GetCollection()?.Remove(sortFolder);
+                }
             }
         }
 
@@ -688,16 +832,19 @@ namespace VisualFileSorter.ViewModels
                 KeyGesture convertedGesture = HashSetKeysToGesture(userShortcut);
 
                 // Make sure shortcut is not already being used
-                foreach (SortFolder sortFolderItem in SortFolderQueue)
+                lock (mSortFolderQueueLock)
                 {
-                    if (sortFolderItem != sortFolder &&
-                        convertedGesture == sortFolderItem.Shortcut)
+                    foreach (SortFolder sortFolderItem in SortFolderQueue)
                     {
-                        OpenShortcutAlreadyExistsDialog();
-                        sortFolder.ShortcutLabel = prevShortcutLabel;
-                        sortFolder.IsShortcutFlashing = false;
-                        EditShortcutButtonsEnabled = true;
-                        return;
+                        if (sortFolderItem != sortFolder &&
+                            convertedGesture == sortFolderItem.Shortcut)
+                        {
+                            OpenShortcutAlreadyExistsDialog();
+                            sortFolder.ShortcutLabel = prevShortcutLabel;
+                            sortFolder.IsShortcutFlashing = false;
+                            EditShortcutButtonsEnabled = true;
+                            return;
+                        }
                     }
                 }
 
@@ -788,12 +935,29 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mTransferProgBarVis, value);
         }
 
+        public bool UndoEnabled
+        {
+            get => mUndoEnabled;
+            set => this.RaiseAndSetIfChanged(ref mUndoEnabled, value);
+        }
+
+        public bool RedoEnabled
+        {
+            get => mRedoEnabled;
+            set => this.RaiseAndSetIfChanged(ref mRedoEnabled, value);
+        }
+
         private ObservableQueue<SortFolder> mSortFolderQueue = new ObservableQueue<SortFolder>();
         private ObservableQueue<FileQueueItem> mFileQueue = new ObservableQueue<FileQueueItem>();
         private FileQueueItem mCurrentFileQueueItem = new FileQueueItem();
+        private CircularBuffer<UndoRedoItem> mUndoBuffer = new CircularBuffer<UndoRedoItem>(30);
+        private CircularBuffer<UndoRedoItem> mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
         private Window mHostWindow;
         private bool mIsMove = true;
         private bool mEditShortcutButtonsEnabled = true;
         private bool mTransferProgBarVis = false;
+        private bool mUndoEnabled = false;
+        private bool mRedoEnabled = false;
+        private readonly object mSortFolderQueueLock = new object();
     }
 }
