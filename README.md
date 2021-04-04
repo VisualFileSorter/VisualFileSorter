@@ -1,6 +1,7 @@
 # Visual File Sorter
 
-Visual File Sorter is a Windows utility program to quickly and visually sort files.
+Visual File Sorter is a Windows utility program to quickly and visually sort files.\
+[Download]()\
 [IMG]
 
 # Cross-platform Support
@@ -13,8 +14,8 @@ I have no plans to make this program cross-platform, but feel free to either for
 
 # Dependencies
 
-[Avalonia](https://github.com/AvaloniaUI/Avalonia)
-[Avalonia Custom TitleBar Template](https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate)
+[Avalonia](https://github.com/AvaloniaUI/Avalonia)\
+[Avalonia Custom TitleBar Template](https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate)\
 [ReactiveUI](https://github.com/reactiveui/ReactiveUI)
 
 # Special Thanks
@@ -25,3 +26,4 @@ A big special thanks to @maxkatz6 on Gitter for teaching me how to [bind command
 - A.I. Sort: Train a model with your visual sorting
 - SortFolder file visibility: Double clicking on a sort folder would show you the current un-transferred files
 - Non-Shell file transfer: The shell file transfer is used because I did not want to write a name conflict resolver. A custom name conflict resolver would help enable cross-platform support.
+- Adhering to Proper MVVM: All logic is currently done in the ViewModel.
