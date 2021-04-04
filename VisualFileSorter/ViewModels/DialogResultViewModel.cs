@@ -22,6 +22,6 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mDiaResult, value);
         }
 
-        private DialogResult mDiaResult = DialogResult.OK;
+        private DialogResult mDiaResult = DialogResult.Cancel;
     }
 }
