@@ -53,8 +53,6 @@
               </DrawingPresenter.Drawing>
             </DrawingPresenter>
           </Grid>
-
-
           
           <TextBlock Text="{Binding MessageWindowTitle}"
                      FontSize="12"

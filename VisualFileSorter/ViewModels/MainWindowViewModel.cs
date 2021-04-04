@@ -1,10 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Platform;
-using Avalonia.Threading;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,15 +7,20 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using ReactiveUI;
+
 using VisualFileSorter.Helpers;
 
 // TODO
 // Add open and save json files
-// Add undo redo
-// clean up code and add comments
 
 namespace VisualFileSorter.ViewModels
 {
@@ -63,6 +61,9 @@ namespace VisualFileSorter.ViewModels
         // MessageBox Interaction
         public Interaction<MessageWindowViewModel, DialogResultViewModel?> ShowDialog { get; }
 
+        #region Main Operations
+
+        // Import files from the file system
         public async void ImportFiles()
         {
             var dlg = new OpenFileDialog();
@@ -109,6 +110,7 @@ namespace VisualFileSorter.ViewModels
                 List<string> alreadyInfileItems = new List<string>();
                 foreach (string fileItem in result)
                 {
+                    // Make sure file is not already in VFS
                     if (!CheckForFileInSession(fileItem))
                     {
                         FileQueueItem tempFileQueueItem = new FileQueueItem();
@@ -167,224 +169,7 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        public bool CheckForFileInSession(string fileItem)
-        {
-            lock (mSortFolderQueueLock)
-            {
-                foreach (SortFolder sortFolderItem in SortFolderQueue)
-                {
-                    string foundFileStr = string.Empty;
-                    if (sortFolderItem.SortSrcFiles.TryGetValue(fileItem, out foundFileStr))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            foreach (FileQueueItem queueItem in FileQueue)
-            {
-                if (queueItem.FullName == fileItem)
-                {
-                    return true;
-                }
-            }
-
-            if (CurrentFileQueueItem?.FullName == fileItem)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool CheckIfPlayableMedia(string extension)
-        {
-            return extension == ".avi" || extension == ".divx" ||
-                   extension == ".vob" || extension == ".evo" ||
-                   extension == ".m2ts" || extension == ".flv" ||
-                   extension == ".mkv" || extension == ".mpg" ||
-                   extension == ".mpeg" || extension == ".m1v" ||
-                   extension == ".mp4" || extension == ".m4v" ||
-                   extension == ".mp4v" || extension == ".mpv4" ||
-                   extension == ".3gp" || extension == ".3gpp" ||
-                   extension == ".3g2" || extension == ".3gp2" ||
-                   extension == ".ogg" || extension == ".ogm" ||
-                   extension == ".rm" || extension == ".rmvb" ||
-                   extension == ".webm" || extension == ".amv" ||
-                   extension == ".mov" || extension == ".hdmov" ||
-                   extension == ".qt" || extension == ".mka" ||
-                   extension == ".mp3" || extension == ".m4a" ||
-                   extension == ".oga" || extension == ".ra" ||
-                   extension == ".ram" || extension == ".flac" ||
-                   extension == ".wv" || extension == ".ac3" ||
-                   extension == ".dts" || extension == ".amr" ||
-                   extension == ".alac" || extension == ".ape" ||
-                   extension == ".apl" || extension == ".aac" ||
-                   extension == ".doc" || extension == ".docx" ||
-                   extension == ".html" || extension == ".htm" ||
-                   extension == ".odt" || extension == ".ods" ||
-                   extension == ".pdf" || extension == ".tex" ||
-                   extension == ".xls" || extension == ".xlsx" ||
-                   extension == ".ppt" || extension == ".pptx" ||
-                   extension == ".txt";
-        }
-
-
-        public async void OpenMissingSortFolderDialog()
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Error";
-            messageVM.MessageWindowWidth = 300;
-            messageVM.MessageWindowHeight = 120;
-            messageVM.MessageWindowErrorIcon = true;
-            messageVM.MessageWindowWarningIcon = false;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = true;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-
-            // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
-        }
-
-        public async Task<DialogResult> OpenRemoveSortFolderDialog()
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Warning";
-            messageVM.MessageWindowWidth = 410;
-            messageVM.MessageWindowHeight = 135;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = true;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-
-            // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
-            return result.DiaResult;
-        }
-
-        public async Task<DialogResult> OpenMissingTransferFilesDialog(List<string> missingSrcFiles)
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Warning";
-            messageVM.MessageWindowWidth = 300;
-            messageVM.MessageWindowHeight = 267;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = true;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
-
-            // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
-            return result.DiaResult;
-        }
-
-        public async void OpenBadFileTransferDialog()
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Information";
-            messageVM.MessageWindowWidth = 315;
-            messageVM.MessageWindowHeight = 120;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
-            messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = true;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-
-            // Show the message box
-            await ShowDialog.Handle(messageVM);
-        }
-
-        public async void OpenImportFilesAlreadyInDialog(List<string> alreadyInfileItems)
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Warning";
-            messageVM.MessageWindowWidth = 300;
-            messageVM.MessageWindowHeight = 227;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = true;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
-
-            // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
-        }
-
-        public async void OpenShortcutAlreadyExistsDialog()
-        {
-            // Set window properties
-            var messageVM = new MessageWindowViewModel();
-
-            messageVM.MessageWindowTitle = "Information";
-            messageVM.MessageWindowWidth = 250;
-            messageVM.MessageWindowHeight = 100;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
-            messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = true;
-
-            // Show the message box
-            var result = await ShowDialog.Handle(messageVM);
-        }
-
-        // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap
-        public Avalonia.Media.Imaging.Bitmap ConvertBitmap(System.Drawing.Bitmap bitmap)
-        {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                bitmap.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-
-                // Converted Avalonia compatible image
-                return new Avalonia.Media.Imaging.Bitmap(memory);
-            }
-        }
-
+        // Transfer the files
         private async void TransferFiles()
         {
             // Clear the undo and redo buffers
@@ -425,12 +210,14 @@ namespace VisualFileSorter.ViewModels
                 }
             }
 
+            // Make sure all SortFolders exist
             if (!allSortDirsExist)
             {
                 OpenMissingSortFolderDialog();
                 return;
             }
 
+            // Open dialog that shows files that no longer exist
             if (0 < missingSrcFiles.Count())
             {
                 DialogResult result = await OpenMissingTransferFilesDialog(missingSrcFiles);
@@ -440,61 +227,114 @@ namespace VisualFileSorter.ViewModels
                 }
             }
 
+            // Make sure there are files to be transferred
             if (0 < allSrcFiles.Count() && 0 < allDestFiles.Count())
             {
                 lock (mSortFolderQueueLock)
                 {
+                    // Clear the source file transfer dictionary
                     foreach (var sortFolderItem in SortFolderQueue)
                     {
                         sortFolderItem.SortSrcFiles.Clear();
                     }
                 }
 
+                // Start an async shell file transfer
                 var _TransferTask = Task.Run(() =>
-                  {
-                      TransferProgBarVis = true;
-                      bool success = Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
-                      if (!success)
-                      {
-                          for (int i = 0; i < allSrcFiles.Count(); i++)
-                          {
-                              if (File.Exists(allSrcFiles[i]))
-                              {
-                                  lock (mSortFolderQueueLock)
-                                  {
-                                      SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == Path.GetDirectoryName(allDestFiles[i]));
-                                      if (foundSortFolder != null)
-                                      {
-                                          foundSortFolder.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
-                                      }
-                                      else
-                                      {
-                                          // SortFolder was removed during transfer, Recreate it
-                                          SortFolder tempFolderQueueItem = new SortFolder();
-                                          tempFolderQueueItem.FullName = Path.GetDirectoryName(allDestFiles[i]);
-                                          tempFolderQueueItem.Name = Path.GetFileName(Path.GetDirectoryName(allDestFiles[i]));
-                                          tempFolderQueueItem.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
-                                          SortFolderQueue?.Enqueue(tempFolderQueueItem);
-                                      }
-                                  }
-                              }
-                          }
+                {
+                    TransferProgBarVis = true;
+                    bool success = Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
+                    if (!success)
+                    {
+                        for (int i = 0; i < allSrcFiles.Count(); i++)
+                        {
+                            if (File.Exists(allSrcFiles[i]))
+                            {
+                                lock (mSortFolderQueueLock)
+                                {
+                                    SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == Path.GetDirectoryName(allDestFiles[i]));
+                                    if (foundSortFolder != null)
+                                    {
+                                        // Add the un-transferred files back into the respective SortFolder
+                                        foundSortFolder.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
+                                    }
+                                    else
+                                    {
+                                        // SortFolder was removed during transfer, Recreate it
+                                        SortFolder tempFolderQueueItem = new SortFolder();
+                                        tempFolderQueueItem.FullName = Path.GetDirectoryName(allDestFiles[i]);
+                                        tempFolderQueueItem.Name = Path.GetFileName(Path.GetDirectoryName(allDestFiles[i]));
+                                        tempFolderQueueItem.SortSrcFiles.TryAdd(allSrcFiles[i], allSrcFiles[i]);
+                                        SortFolderQueue?.Enqueue(tempFolderQueueItem);
+                                    }
+                                }
+                            }
+                        }
 
-                          // Open message box
-                          Dispatcher.UIThread.InvokeAsync(() =>
-                          {
-                              OpenBadFileTransferDialog();
-                          }, DispatcherPriority.Normal);
-                      }
+                        // Open message box
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            OpenBadFileTransferDialog();
+                        }, DispatcherPriority.Normal);
+                    }
 
-                      // Hide progress bar
-                      TransferProgBarVis = false;
-                  }
+                    // Hide progress bar
+                    TransferProgBarVis = false;
+                }
                 );
             }
         }
 
+        [DllImport("Shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr ShellExecute(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
 
+        // Open current file with Win32 shell
+        private void OpenCurrentFile()
+        {
+            if (File.Exists(CurrentFileQueueItem?.FullName))
+            {
+                ShellExecute(IntPtr.Zero, null, CurrentFileQueueItem.FullName, null, null, 1);
+            }
+        }
+
+        // Sort the current file to the respective SortFolder for the given KeyGesture
+        private void SortFile(KeyEventArgs e)
+        {
+            lock (mSortFolderQueueLock)
+            {
+                // Find the SortFolder for the given KeyGesture
+                SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut?.Matches(e) ?? false);
+                if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
+                {
+                    // Add the operation onto the undo buffer
+                    mUndoBuffer.PushBack(new UndoRedoItem(CurrentFileQueueItem.FullName, foundSortFolder.FullName));
+                    UndoEnabled = !mUndoBuffer.IsEmpty;
+                    RedoEnabled = !mRedoBuffer.IsEmpty;
+
+                    // Add the file to the sort folder and get next file
+                    foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
+                    CurrentFileQueueItem = FileQueue.Dequeue();
+                    if (CurrentFileQueueItem != null)
+                    {
+                        try
+                        {
+                            int THUMB_SIZE = 256;
+                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                               CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                            CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                        }
+                        catch (Exception)
+                        {
+                            // Thumbnail error, set to default error thumbnail
+                            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                            CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Add a new SortFolder
         public async void AddSortDirectory()
         {
             var dlg = new OpenFolderDialog();
@@ -523,149 +363,7 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        [DllImport("Shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr ShellExecute(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
-
-        private void OpenCurrentFile()
-        {
-            if (File.Exists(CurrentFileQueueItem?.FullName))
-            {
-                ShellExecute(IntPtr.Zero, null, CurrentFileQueueItem.FullName, null, null, 1);
-            }
-        }
-
-        private void Undo()
-        {
-            if (!mUndoBuffer.IsEmpty)
-            {
-                UndoRedoItem curUndoItem = mUndoBuffer.Back();
-                mUndoBuffer.PopBack();
-
-                if (CurrentFileQueueItem != null)
-                {
-                    FileQueue.Enqueue(CurrentFileQueueItem);
-                }
-
-                FileQueueItem tempFileQueueItem = new FileQueueItem();
-                int THUMB_SIZE = 64;
-                int THUMB_SIZE_BIG = 256;
-                try
-                {
-                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                        curUndoItem.mSrcFilename, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                    Bitmap thumbnailBig = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                        curUndoItem.mSrcFilename, THUMB_SIZE_BIG, THUMB_SIZE_BIG, Helpers.ThumbnailOptions.None);
-                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
-                    tempFileQueueItem.BigImage = ConvertBitmap(thumbnailBig);
-                }
-                catch (Exception)
-                {
-                    // Thumbnail error, set to default error thumbnail
-                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
-                    tempFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
-                }
-
-                tempFileQueueItem.FullName = curUndoItem.mSrcFilename;
-                tempFileQueueItem.Name = Path.GetFileName(curUndoItem.mSrcFilename);
-                tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(curUndoItem.mSrcFilename));
-                CurrentFileQueueItem = tempFileQueueItem;
-
-                // Remove the entry from the SortFolder
-                lock (mSortFolderQueueLock)
-                {
-                    SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == curUndoItem.mSortFolderName);
-                    if (foundSortFolder != null)
-                    {
-                        string foundStr = string.Empty;
-                        foundSortFolder.SortSrcFiles.TryRemove(curUndoItem.mSrcFilename, out foundStr);
-                    }
-                }
-
-                mRedoBuffer.PushBack(curUndoItem);
-                UndoEnabled = !mUndoBuffer.IsEmpty;
-                RedoEnabled = !mRedoBuffer.IsEmpty;
-            }
-        }
-
-        private void Redo()
-        {
-            if (!mRedoBuffer.IsEmpty)
-            {
-                UndoRedoItem curRedoItem = mRedoBuffer.Back();
-                mRedoBuffer.PopBack();
-
-                lock (mSortFolderQueueLock)
-                {
-                    SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.FullName == curRedoItem.mSortFolderName);
-                    if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
-                    {
-                        // Make sure the CurrentFileQueueItem and curRedoItem.mSrcFilename are equal
-                        if (CurrentFileQueueItem.FullName != curRedoItem.mSrcFilename)
-                        {
-                            throw new ArgumentException("CurrentFileQueueItem.FullName does not match Redo object");
-                        }
-
-                        foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
-                        CurrentFileQueueItem = FileQueue.Dequeue();
-                        if (CurrentFileQueueItem != null)
-                        {
-                            try
-                            {
-                                int THUMB_SIZE = 256;
-                                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
-                            }
-                            catch (Exception)
-                            {
-                                // Thumbnail error, set to default error thumbnail
-                                var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                                CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
-                            }
-                        }
-                    }
-                }
-
-                mUndoBuffer.PushBack(curRedoItem);
-                UndoEnabled = !mUndoBuffer.IsEmpty;
-                RedoEnabled = !mRedoBuffer.IsEmpty;
-            }
-        }
-
-        private void SortFile(KeyEventArgs e)
-        {
-            lock (mSortFolderQueueLock)
-            {
-                SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.Shortcut?.Matches(e) ?? false);
-                if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
-                {
-                    mUndoBuffer.PushBack(new UndoRedoItem(CurrentFileQueueItem.FullName, foundSortFolder.FullName));
-                    UndoEnabled = !mUndoBuffer.IsEmpty;
-                    RedoEnabled = !mRedoBuffer.IsEmpty;
-
-                    foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
-                    CurrentFileQueueItem = FileQueue.Dequeue();
-                    if (CurrentFileQueueItem != null)
-                    {
-                        try
-                        {
-                            int THUMB_SIZE = 256;
-                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                               CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                            CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
-                        }
-                        catch (Exception)
-                        {
-                            // Thumbnail error, set to default error thumbnail
-                            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                            CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
-                        }
-                    }
-                }
-            }
-        }
-
+        // On every keystroke, pass the gesture to the SortFile method
         public IDisposable AttachShortcut(TopLevel root)
         {
             void PreviewKeyDown(object sender, KeyEventArgs e)
@@ -679,6 +377,7 @@ namespace VisualFileSorter.ViewModels
                 RoutingStrategies.Tunnel);
         }
 
+        // Convert a HashSet of Keys to a KeyGesture
         private KeyGesture HashSetKeysToGesture(HashSet<Key> keys)
         {
             if (keys.Count != 0)
@@ -689,6 +388,7 @@ namespace VisualFileSorter.ViewModels
                         keys.FirstOrDefault(x => x != Key.LeftCtrl && x != Key.RightCtrl),
                         KeyModifiers.Control);
                 }
+                // Alt doesn't work
                 else if (keys.Contains(Key.LeftAlt) || keys.Contains(Key.RightAlt))
                 {
                     return new KeyGesture(
@@ -709,6 +409,7 @@ namespace VisualFileSorter.ViewModels
             return null;
         }
 
+        // Removes a SortFolder
         public async void RemoveSortFolder(SortFolder sortFolder)
         {
             // Message dialog on what to do with un-transfered files
@@ -782,7 +483,7 @@ namespace VisualFileSorter.ViewModels
                         {
                             SortFolderQueue.GetCollection()?.Remove(sortFolder);
                         }
-                        break;
+                        return;
 
                     // Cancel the operation
                     case DialogResult.Cancel:
@@ -802,6 +503,7 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        // Re-direct a SortFolder to a new location
         public async void RemapSortFolderLocation(SortFolder sortFolder)
         {
             var dlg = new OpenFolderDialog();
@@ -817,6 +519,7 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        // Edit or create a shortcut for a SortFolder
         public async void EditShortcut(SortFolder sortFolder)
         {
             if (sortFolder != null)
@@ -848,6 +551,7 @@ namespace VisualFileSorter.ViewModels
                     }
                 }
 
+                // Add the shortcut to the SortFolder
                 if (convertedGesture != null)
                 {
                     sortFolder.Shortcut = convertedGesture;
@@ -889,6 +593,357 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        #endregion Main Operations
+
+        #region Helper Methods
+
+        // Make sure file is not already in VFS
+        public bool CheckForFileInSession(string fileItem)
+        {
+            lock (mSortFolderQueueLock)
+            {
+                foreach (SortFolder sortFolderItem in SortFolderQueue)
+                {
+                    string foundFileStr = string.Empty;
+                    if (sortFolderItem.SortSrcFiles.TryGetValue(fileItem, out foundFileStr))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            foreach (FileQueueItem queueItem in FileQueue)
+            {
+                if (queueItem.FullName == fileItem)
+                {
+                    return true;
+                }
+            }
+
+            if (CurrentFileQueueItem?.FullName == fileItem)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // Show play button if playable media
+        public bool CheckIfPlayableMedia(string extension)
+        {
+            return extension == ".avi" || extension == ".divx" ||
+                   extension == ".vob" || extension == ".evo" ||
+                   extension == ".m2ts" || extension == ".flv" ||
+                   extension == ".mkv" || extension == ".mpg" ||
+                   extension == ".mpeg" || extension == ".m1v" ||
+                   extension == ".mp4" || extension == ".m4v" ||
+                   extension == ".mp4v" || extension == ".mpv4" ||
+                   extension == ".3gp" || extension == ".3gpp" ||
+                   extension == ".3g2" || extension == ".3gp2" ||
+                   extension == ".ogg" || extension == ".ogm" ||
+                   extension == ".rm" || extension == ".rmvb" ||
+                   extension == ".webm" || extension == ".amv" ||
+                   extension == ".mov" || extension == ".hdmov" ||
+                   extension == ".qt" || extension == ".mka" ||
+                   extension == ".mp3" || extension == ".m4a" ||
+                   extension == ".oga" || extension == ".ra" ||
+                   extension == ".ram" || extension == ".flac" ||
+                   extension == ".wv" || extension == ".ac3" ||
+                   extension == ".dts" || extension == ".amr" ||
+                   extension == ".alac" || extension == ".ape" ||
+                   extension == ".apl" || extension == ".aac" ||
+                   extension == ".doc" || extension == ".docx" ||
+                   extension == ".html" || extension == ".htm" ||
+                   extension == ".odt" || extension == ".ods" ||
+                   extension == ".pdf" || extension == ".tex" ||
+                   extension == ".xls" || extension == ".xlsx" ||
+                   extension == ".ppt" || extension == ".pptx" ||
+                   extension == ".txt";
+        }
+
+        // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap
+        public Avalonia.Media.Imaging.Bitmap ConvertBitmap(System.Drawing.Bitmap bitmap)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                // Converted Avalonia compatible image
+                return new Avalonia.Media.Imaging.Bitmap(memory);
+            }
+        }
+
+        #endregion Helper Methods
+
+        #region Show MessageBox Methods
+
+        // Display error message that a SortFolder no longer exists
+        public async void OpenMissingSortFolderDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Error";
+            messageVM.MessageWindowWidth = 300;
+            messageVM.MessageWindowHeight = 120;
+            messageVM.MessageWindowErrorIcon = true;
+            messageVM.MessageWindowWarningIcon = false;
+            messageVM.MessageWindowInfoIcon = false;
+
+            messageVM.MB_MissingSortFolderVisible = true;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+        }
+
+        // Display warning that the removed sort folder has/had un-transferred files
+        public async Task<DialogResult> OpenRemoveSortFolderDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 410;
+            messageVM.MessageWindowHeight = 135;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = true;
+            messageVM.MessageWindowInfoIcon = false;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = true;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+            return result.DiaResult;
+        }
+
+        // Display a warning that un-transferred files no longer exist
+        public async Task<DialogResult> OpenMissingTransferFilesDialog(List<string> missingSrcFiles)
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 300;
+            messageVM.MessageWindowHeight = 267;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = true;
+            messageVM.MessageWindowInfoIcon = false;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = true;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+            return result.DiaResult;
+        }
+
+        // Display information that something went wrong with the shell moving/copying of files
+        public async void OpenBadFileTransferDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Information";
+            messageVM.MessageWindowWidth = 315;
+            messageVM.MessageWindowHeight = 120;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = false;
+            messageVM.MessageWindowInfoIcon = true;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = true;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
+        }
+
+        // Display a warning that imported files already are in VFS
+        public async void OpenImportFilesAlreadyInDialog(List<string> alreadyInfileItems)
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 300;
+            messageVM.MessageWindowHeight = 227;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = true;
+            messageVM.MessageWindowInfoIcon = false;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = true;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+        }
+
+        // Display information that the shortcut already exists
+        public async void OpenShortcutAlreadyExistsDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Information";
+            messageVM.MessageWindowWidth = 250;
+            messageVM.MessageWindowHeight = 100;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = false;
+            messageVM.MessageWindowInfoIcon = true;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = true;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+        }
+
+        #endregion Show MessageBox Methods
+
+        #region Undo/Redo Operations
+
+        // Undo the last file sort
+        private void Undo()
+        {
+            // Make sure undo buffer is not empty
+            if (!mUndoBuffer.IsEmpty)
+            {
+                // Get back UndoRedoItem
+                UndoRedoItem curUndoItem = mUndoBuffer.Back();
+                mUndoBuffer.PopBack();
+
+                // Add the current item back onto the file queue
+                if (CurrentFileQueueItem != null)
+                {
+                    FileQueue.Enqueue(CurrentFileQueueItem);
+                }
+
+                // Recreate the FileQueueItem object for the sorted file
+                FileQueueItem tempFileQueueItem = new FileQueueItem();
+                int THUMB_SIZE = 64;
+                int THUMB_SIZE_BIG = 256;
+                try
+                {
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                        curUndoItem.mSrcFilename, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    Bitmap thumbnailBig = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                        curUndoItem.mSrcFilename, THUMB_SIZE_BIG, THUMB_SIZE_BIG, Helpers.ThumbnailOptions.None);
+                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+                    tempFileQueueItem.BigImage = ConvertBitmap(thumbnailBig);
+                }
+                catch (Exception)
+                {
+                    // Thumbnail error, set to default error thumbnail
+                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                    tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                    tempFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                }
+
+                tempFileQueueItem.FullName = curUndoItem.mSrcFilename;
+                tempFileQueueItem.Name = Path.GetFileName(curUndoItem.mSrcFilename);
+                tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(curUndoItem.mSrcFilename));
+                CurrentFileQueueItem = tempFileQueueItem;
+
+                // Remove the entry from the SortFolder
+                lock (mSortFolderQueueLock)
+                {
+                    SortFolder? foundSortFolder = SortFolderQueue?.FirstOrDefault(x => x.FullName == curUndoItem.mSortFolderName);
+                    if (foundSortFolder != null)
+                    {
+                        string foundStr = string.Empty;
+                        foundSortFolder.SortSrcFiles.TryRemove(curUndoItem.mSrcFilename, out foundStr);
+                    }
+                }
+
+                // Add onto redo buffer and set enable state on undo/redo buttons
+                mRedoBuffer.PushBack(curUndoItem);
+                UndoEnabled = !mUndoBuffer.IsEmpty;
+                RedoEnabled = !mRedoBuffer.IsEmpty;
+            }
+        }
+
+        // Redo the last file sort
+        private void Redo()
+        {
+            // Make sure redo buffer is not empty
+            if (!mRedoBuffer.IsEmpty)
+            {
+                // Get back UndoRedoItem
+                UndoRedoItem curRedoItem = mRedoBuffer.Back();
+                mRedoBuffer.PopBack();
+
+                lock (mSortFolderQueueLock)
+                {
+                    // Find the respective SortFolder
+                    SortFolder? foundSortFolder = SortFolderQueue.FirstOrDefault(x => x.FullName == curRedoItem.mSortFolderName);
+                    if (foundSortFolder != null && CurrentFileQueueItem != null && EditShortcutButtonsEnabled == true)
+                    {
+                        // Make sure the CurrentFileQueueItem and curRedoItem.mSrcFilename are equal
+                        if (CurrentFileQueueItem.FullName != curRedoItem.mSrcFilename)
+                        {
+                            throw new ArgumentException("CurrentFileQueueItem.FullName does not match Redo object");
+                        }
+
+                        // Re-add the file back into its respective SortFolder and get next file
+                        foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
+                        CurrentFileQueueItem = FileQueue.Dequeue();
+                        if (CurrentFileQueueItem != null)
+                        {
+                            try
+                            {
+                                int THUMB_SIZE = 256;
+                                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                            }
+                            catch (Exception)
+                            {
+                                // Thumbnail error, set to default error thumbnail
+                                var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                                CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                            }
+                        }
+                    }
+                }
+
+                // Add onto undo buffer and set enable state on undo/redo buttons
+                mUndoBuffer.PushBack(curRedoItem);
+                UndoEnabled = !mUndoBuffer.IsEmpty;
+                RedoEnabled = !mRedoBuffer.IsEmpty;
+            }
+        }
+
+        #endregion Undo/Redo Operations
+
+        #region Open/Save Session
         private bool OpenSession()
         {
             return true;
@@ -898,6 +953,9 @@ namespace VisualFileSorter.ViewModels
         {
             return true;
         }
+        #endregion Open/Save Session
+
+        #region Properties and Members
 
         public FileQueueItem CurrentFileQueueItem
         {
@@ -959,5 +1017,6 @@ namespace VisualFileSorter.ViewModels
         private bool mUndoEnabled = false;
         private bool mRedoEnabled = false;
         private readonly object mSortFolderQueueLock = new object();
+        #endregion Properties and Members
     }
 }

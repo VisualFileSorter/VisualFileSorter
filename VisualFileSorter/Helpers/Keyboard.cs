@@ -12,6 +12,7 @@ namespace VisualFileSorter.Helpers
         public static readonly HashSet<Key> Keys = new HashSet<Key>();
         public static bool IsKeyDown(Key key) => Keys.Contains(key);
 
+        // Get the currently held keys as a shortcut
         public static HashSet<Key> GetUserShortcut()
         {
             HashSet<Key> Shortcut = new HashSet<Key>();
@@ -54,6 +55,7 @@ namespace VisualFileSorter.Helpers
             }
         }
 
+        // Get the non-modifier key
         private static bool GetNonModifierKey(ref HashSet<Key> Shortcut, bool allowYZOS, bool allowTabCapsLock)
         {
             if      (Keys.Contains(Key.Back))             { Shortcut.Add(Key.Back); return true; }
