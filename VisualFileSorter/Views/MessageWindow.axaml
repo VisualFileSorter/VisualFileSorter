@@ -56,7 +56,6 @@
                   Margin="5"
                   Command="{Binding QueueCmd}"/>
 
-          
           <Button Content="OK"
                   Margin="5"
                   Command="{Binding OkCmd}"/>
@@ -65,7 +64,6 @@
                   Margin="5"
                   Command="{Binding CancelCmd}"/>
         </StackPanel>
-
       </Grid>
 
       <!--Missing transfer files Warning-->
