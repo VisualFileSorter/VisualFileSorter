@@ -44,6 +44,9 @@ namespace VisualFileSorter.Views
 
             Application.Current.Styles[1] = App.FluentLight;
             Application.Current.Resources["WindowsTitleBarBackground"] = new SolidColorBrush { Color = new Color(255, 204, 213, 240) };
+            Application.Current.Resources["ButtonForeground"] = new SolidColorBrush { Color = new Color(255, 255, 255, 255) };
+            Application.Current.Resources["ButtonForegroundPointerOver"] = new SolidColorBrush { Color = new Color(255, 255, 255, 255) };
+            Application.Current.Resources["ButtonForegroundPressed"] = new SolidColorBrush { Color = new Color(255, 255, 255, 255) };
 
             this.WhenActivated(d => d(ViewModel.ShowDialog.RegisterHandler(DoShowDialogAsync)));
         }

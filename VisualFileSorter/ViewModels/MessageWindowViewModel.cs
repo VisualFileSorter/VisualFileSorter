@@ -112,6 +112,20 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_ShortcutAlreadyExistsVisible, value);
         }
 
+        public string MB_ImportFilesAlreadyInList
+        {
+            get => mMB_ImportFilesAlreadyInList;
+            set => this.RaiseAndSetIfChanged(ref mMB_ImportFilesAlreadyInList, value);
+        }
+
+        public string MB_MissingTransferFilesList
+        {
+            get => mMB_MissingTransferFilesList;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingTransferFilesList, value);
+        }
+
+        private string mMB_ImportFilesAlreadyInList = String.Empty;
+        private string mMB_MissingTransferFilesList = String.Empty;
         private string mMessageWindowTitle = String.Empty;
         private int mMessageWindowWidth = 300;
         private int mMessageWindowHeight = 120;

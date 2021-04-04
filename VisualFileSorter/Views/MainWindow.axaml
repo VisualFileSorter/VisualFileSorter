@@ -9,7 +9,7 @@
         xmlns:local="clr-namespace:VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VisualFileSorter.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/VFS-logo.ico"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
@@ -19,6 +19,7 @@
         MinHeight="546">
 
   <Window.Styles>
+    <Styles>
     <Style Selector="Label.Flashing">
       <Style.Animations>
         <Animation Duration="0:0:2" IterationCount="INFINITE">
@@ -120,6 +121,8 @@
         </ControlTemplate>
       </Setter>
     </Style>
+
+    </Styles>
   </Window.Styles>
 
   <DockPanel HorizontalAlignment="Stretch"
@@ -227,6 +230,14 @@
             </Grid>
           </Viewbox>
 
+          <Grid IsVisible="{Binding TransferProgBarVis}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <ProgressBar Grid.Row="0" IsIndeterminate="True"  VerticalAlignment="Bottom"/>
+            <Label Grid.Row="1" Content="Transferring..." FontSize="10" HorizontalContentAlignment="Center"/>
+          </Grid>
         </StackPanel>
       </Grid>
 
@@ -279,7 +290,8 @@
                     <Viewbox Grid.Row="1" Margin="0,-3,0,0" MaxHeight="25">
                       <Label Content="{Binding Name}"
                              Foreground="White"
-                             HorizontalContentAlignment="Center"/>
+                             HorizontalContentAlignment="Center"
+                             ToolTip.Tip="{Binding FullName}"/>
                     </Viewbox>
                   </Grid>
                 </DataTemplate>
@@ -313,7 +325,8 @@
         <Image Grid.Row="0" Source="{Binding CurrentFileQueueItem.BigImage}" />
         <Label Grid.Row="1" Content="{Binding CurrentFileQueueItem.Name}" 
                Foreground="White"
-               HorizontalAlignment="Center" />
+               HorizontalAlignment="Center"
+               ToolTip.Tip="{Binding CurrentFileQueueItem.FullName}"/>
       </Grid>
 
 
@@ -404,7 +417,6 @@
                                 IsEnabled="{Binding $parent[ListBox].DataContext.EditShortcutButtonsEnabled}"
                                 HorizontalAlignment="Center" 
                                 VerticalAlignment="Center"
-                                Foreground="White"
                                 CommandParameter="{Binding}"
                                 Command="{Binding $parent[ListBox].DataContext.EditShortcutCmd}"/>
                       </Grid>

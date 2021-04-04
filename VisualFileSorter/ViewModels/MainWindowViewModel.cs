@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using ReactiveUI;
 using System;
@@ -28,6 +30,7 @@ namespace VisualFileSorter.ViewModels
         {
             // Get the main host window
             mHostWindow = hostWindow;
+            AttachShortcut(mHostWindow);
 
             // MainWindow commands
             ImportFilesCmd = ReactiveCommand.Create(ImportFiles);
@@ -67,30 +70,30 @@ namespace VisualFileSorter.ViewModels
             {
                 Name = "Images",
                 Extensions = { "tif", "tiff", "bmp", "png", "jpg", "jpeg",
-                                                                                     "gif", "raw", "cr2", "nef", "orf", "sr2", "webp"}
+                               "gif", "raw", "cr2", "nef", "orf", "sr2", "webp"}
             });
             dlg.Filters.Add(new FileDialogFilter()
             {
                 Name = "Video",
                 Extensions = { "avi", "divx", "vob", "evo", "m2ts", "flv",
-                                                                                    "mkv", "mpg", "mpeg", "m1v", "mp4", "m4v",
-                                                                                    "mp4v", "mpv4", "3gp", "3gpp", "3g2", "3gp2",
-                                                                                    "ogg", "ogm", "ogv", "rm", "rmvb", "webm",
-                                                                                    "amv", "mov", "hdmov", "qt"}
+                               "mkv", "mpg", "mpeg", "m1v", "mp4", "m4v",
+                               "mp4v", "mpv4", "3gp", "3gpp", "3g2", "3gp2",
+                               "ogg", "ogm", "ogv", "rm", "rmvb", "webm",
+                               "amv", "mov", "hdmov", "qt"}
             });
             dlg.Filters.Add(new FileDialogFilter()
             {
                 Name = "Audio",
                 Extensions = { "mka", "mp3", "m4a", "oga", "ra", "ram",
-                                                                                    "flac", "wv", "ac3", "dts", "amr", "alac",
-                                                                                    "ape", "apl", "aac"}
+                               "flac", "wv", "ac3", "dts", "amr", "alac",
+                               "ape", "apl", "aac"}
             });
             dlg.Filters.Add(new FileDialogFilter()
             {
                 Name = "Documents",
                 Extensions = { "doc", "docx", "htm", "html",
-                                                                                        "odt", "ods", "pdf", "tex",
-                                                                                        "xls", "xlsx", "ppt", "pptx", "txt"}
+                               "odt", "ods", "pdf", "tex",
+                               "xls", "xlsx", "ppt", "pptx", "txt"}
             });
 
             var result = await dlg.ShowAsync(mHostWindow);
@@ -104,9 +107,19 @@ namespace VisualFileSorter.ViewModels
                     {
                         FileQueueItem tempFileQueueItem = new FileQueueItem();
                         int THUMB_SIZE = 64;
-                        Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                           fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                        tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+                        try
+                        {
+                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                                fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                            tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+                        }
+                        catch (Exception)
+                        {
+                            // Thumbnail error, set to default error thumbnail
+                            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                            tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                        }
+
                         tempFileQueueItem.FullName = fileItem;
                         tempFileQueueItem.Name = Path.GetFileName(fileItem);
                         tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
@@ -124,10 +137,20 @@ namespace VisualFileSorter.ViewModels
                 if (CurrentFileQueueItem?.Name == null && 0 < FileQueue.Count())
                 {
                     CurrentFileQueueItem = FileQueue.Dequeue();
-                    int THUMB_SIZE = 256;
-                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+
+                    try
+                    {
+                        int THUMB_SIZE = 256;
+                        Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                           CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                        CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                    }
+                    catch (Exception)
+                    {
+                        // Thumbnail error, set to default error thumbnail
+                        var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                        CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                    }
                 }
 
                 // Display message that some files have already been imported
@@ -262,6 +285,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -309,6 +333,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = true;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -407,6 +432,7 @@ namespace VisualFileSorter.ViewModels
                 // TODO make thread safe
                 var _TransferTask = Task.Run(() =>
                   {
+                      TransferProgBarVis = true;
                       bool success = Helpers.WindowsShellFileOperation.TransferFiles(allSrcFiles, allDestFiles, IsMove);
                       if (!success)
                       {
@@ -437,6 +463,9 @@ namespace VisualFileSorter.ViewModels
                               OpenBadFileTransferDialog();
                           }, DispatcherPriority.Normal);
                       }
+
+                      // Hide progress bar
+                      TransferProgBarVis = false;
                   }
                 );
             }
@@ -488,30 +517,34 @@ namespace VisualFileSorter.ViewModels
                 CurrentFileQueueItem = FileQueue.Dequeue();
                 if (CurrentFileQueueItem != null)
                 {
-                    int THUMB_SIZE = 256;
-                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                    try
+                    {
+                        int THUMB_SIZE = 256;
+                        Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                           CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                        CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                    }
+                    catch (Exception)
+                    {
+                        // Thumbnail error, set to default error thumbnail
+                        var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                        CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                    }
                 }
             }
         }
 
-        void MainWindowPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            SortFile(e);
-        }
-
         public IDisposable AttachShortcut(TopLevel root)
         {
+            void PreviewKeyDown(object sender, KeyEventArgs e)
+            {
+                SortFile(e);
+            }
+
             return root.AddDisposableHandler(
                 InputElement.KeyDownEvent,
-                MainWindowPreviewKeyDown,
+                PreviewKeyDown,
                 RoutingStrategies.Tunnel);
-        }
-
-        public void DetachShortcut(TopLevel root)
-        {
-            root.RemoveHandler(InputElement.KeyDownEvent, MainWindowPreviewKeyDown);
         }
 
         private KeyGesture HashSetKeysToGesture(HashSet<Key> keys)
@@ -560,10 +593,21 @@ namespace VisualFileSorter.ViewModels
                             if (File.Exists(fileItem))
                             {
                                 FileQueueItem tempFileQueueItem = new FileQueueItem();
-                                int THUMB_SIZE = 64;
-                                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                                   fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                                tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+
+                                try
+                                {
+                                    int THUMB_SIZE = 64;
+                                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                                       fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                                    tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
+                                }
+                                catch (Exception)
+                                {
+                                    // Thumbnail error, set to default error thumbnail
+                                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                                    tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                                }
+
                                 tempFileQueueItem.FullName = fileItem;
                                 tempFileQueueItem.Name = Path.GetFileName(fileItem);
                                 tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
@@ -577,16 +621,25 @@ namespace VisualFileSorter.ViewModels
                         if (CurrentFileQueueItem?.Name == null && 0 < FileQueue.Count())
                         {
                             CurrentFileQueueItem = FileQueue.Dequeue();
-                            int THUMB_SIZE = 256;
-                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                               CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                            CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+
+                            try
+                            {
+                                int THUMB_SIZE = 256;
+                                Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                                   CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                                CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                            }
+                            catch (Exception)
+                            {
+                                // Thumbnail error, set to default error thumbnail
+                                var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                                CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                            }
                         }
                         break;
 
-                    // Remove the SortFolder and shortcut
+                    // Remove the SortFolder
                     case DialogResult.OK:
-                        DetachShortcut(mHostWindow);
                         SortFolderQueue.GetCollection()?.Remove(sortFolder);
                         break;
 
@@ -598,9 +651,11 @@ namespace VisualFileSorter.ViewModels
                 }
             }
 
-            // Remove the SortFolder and shortcut
-            DetachShortcut(mHostWindow);
-            SortFolderQueue.GetCollection()?.Remove(sortFolder);
+            // Remove the SortFolder
+            if (sortFolder != null)
+            {
+                SortFolderQueue.GetCollection()?.Remove(sortFolder);
+            }
         }
 
         public async void RemapSortFolderLocation(SortFolder sortFolder)
@@ -648,7 +703,6 @@ namespace VisualFileSorter.ViewModels
 
                 if (convertedGesture != null)
                 {
-                    AttachShortcut(mHostWindow);
                     sortFolder.Shortcut = convertedGesture;
                     sortFolder.ShortcutButtonContent = "Edit Shortcut";
                     sortFolder.IsShortcutFlashing = false;
@@ -728,11 +782,18 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mEditShortcutButtonsEnabled, value);
         }
 
+        public bool TransferProgBarVis
+        {
+            get => mTransferProgBarVis;
+            set => this.RaiseAndSetIfChanged(ref mTransferProgBarVis, value);
+        }
+
         private ObservableQueue<SortFolder> mSortFolderQueue = new ObservableQueue<SortFolder>();
         private ObservableQueue<FileQueueItem> mFileQueue = new ObservableQueue<FileQueueItem>();
         private FileQueueItem mCurrentFileQueueItem = new FileQueueItem();
         private Window mHostWindow;
         private bool mIsMove = true;
         private bool mEditShortcutButtonsEnabled = true;
+        private bool mTransferProgBarVis = false;
     }
 }
