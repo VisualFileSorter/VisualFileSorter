@@ -2,7 +2,7 @@
 
 Visual File Sorter is a Windows utility program to quickly and visually sort files.
 
-![Operation GIF](../blob/master/VFS_Anim.gif?raw=true)
+![Operation GIF](../master/VFS_Anim.gif?raw=true)
 
 
 # Download
