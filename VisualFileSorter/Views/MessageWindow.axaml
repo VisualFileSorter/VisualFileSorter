@@ -153,7 +153,7 @@
           <RowDefinition Height="*"/>
           <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.RowSpan="2" HorizontalContentAlignment="Center" Content="Openning this session will replace your current session.&#10;Any unsaved progress in the current session will be lost!&#10;&#10;Continue?"/>
+        <Label Grid.Row="0" Grid.RowSpan="2" HorizontalContentAlignment="Center" Content="Opening this session will replace your current session.&#10;Any unsaved progress in the current session will be lost!&#10;&#10;Continue?"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal"
                     HorizontalAlignment="Right"
