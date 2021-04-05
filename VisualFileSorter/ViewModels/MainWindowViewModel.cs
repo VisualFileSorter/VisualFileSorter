@@ -1033,6 +1033,30 @@ namespace VisualFileSorter.ViewModels
                     return;
                 }
             }
+            else
+            {
+                // Prompt user for file selection of session to be opened.
+                var dlg = new OpenFileDialog();
+                dlg.Title = "Open Session";
+                dlg.AllowMultiple = false;
+                dlg.InitialFileName = "VFS_Session.vfss";
+                dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var result = await dlg.ShowAsync(mHostWindow);
+                if (result != null)
+                {
+                    try // Derialize Json into a Session instance.
+                    {
+                        // Create "new" session for opened .vfss file.
+                        Session openedSession = new Session();
+                        // Deserialize .vfss file and fill current session from Json content.
+                        openedSession.Deserialize(result.ToString());
+                    }
+                    catch (Exception)
+                    {
+                        // TODO: Create error opening session dialog.
+                    }
+                }
+            }
 
 
         }
