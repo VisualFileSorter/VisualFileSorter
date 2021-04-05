@@ -8,6 +8,8 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -18,10 +20,6 @@ using Avalonia.Threading;
 using ReactiveUI;
 
 using VisualFileSorter.Helpers;
-
-// TODO
-// Add open and save json files
-// Add warning dialog that opening a session will replace the current session
 
 namespace VisualFileSorter.ViewModels
 {
@@ -710,6 +708,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -734,6 +733,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -766,6 +766,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = false;
             messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
 
             // Show the message box
@@ -799,6 +800,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = true;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -823,6 +825,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = true;
             messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = false;
             messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
 
             // Show the message box
@@ -848,6 +851,32 @@ namespace VisualFileSorter.ViewModels
             messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = true;
+            messageVM.MB_ReplaceSessionVisible = false;
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
+        }
+
+        // Display warning that the current session will be replaced
+        public async void OpenReplaceSessionDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 250;
+            messageVM.MessageWindowHeight = 100;
+            messageVM.MessageWindowErrorIcon = false;
+            messageVM.MessageWindowWarningIcon = false;
+            messageVM.MessageWindowInfoIcon = true;
+
+            messageVM.MB_MissingSortFolderVisible = false;
+            messageVM.MB_RemoveSortFolderVisible = false;
+            messageVM.MB_MissingTransferFilesVisible = false;
+            messageVM.MB_BadFileTransferVisible = false;
+            messageVM.MB_ImportFilesAlreadyInVisible = false;
+            messageVM.MB_ShortcutAlreadyExistsVisible = false;
+            messageVM.MB_ReplaceSessionVisible = true;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -973,11 +1002,33 @@ namespace VisualFileSorter.ViewModels
         #region Open/Save Session
         private bool OpenSession()
         {
+            // FileQueue
+            // - FullPath of Files  
+
+            // SortFolderQueue
+            // - Full path of folder
+            // - ShortCut Label
+            // - Un-transferred files list
             return true;
         }
 
+        // Serialize the information above into JSON to provide session options.
         private bool SaveSession()
         {
+            // Get FileQueue files
+            foreach (var fileItem in FileQueue)
+            {
+                
+            }
+
+            lock (mSortFolderQueueLock)
+            {
+                foreach (var sortFolderItem in SortFolderQueue)
+                {
+
+                }
+            }
+
             return true;
         }
         #endregion Open/Save Session

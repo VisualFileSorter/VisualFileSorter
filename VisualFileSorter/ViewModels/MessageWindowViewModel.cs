@@ -112,6 +112,12 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_ShortcutAlreadyExistsVisible, value);
         }
 
+        public bool MB_ReplaceSessionVisible
+        {
+            get => mMB_ReplaceSessionVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_ReplaceSessionVisible, value);
+        }
+
         public string MB_ImportFilesAlreadyInList
         {
             get => mMB_ImportFilesAlreadyInList;
@@ -138,6 +144,7 @@ namespace VisualFileSorter.ViewModels
         private bool mMB_BadFileTransferVisible = false;
         private bool mMB_ImportFilesAlreadyInVisible = false;
         private bool mMB_ShortcutAlreadyExistsVisible = false;
+        private bool mMB_ReplaceSessionVisible = false;
         #endregion Message Window Properties
     }
 }
