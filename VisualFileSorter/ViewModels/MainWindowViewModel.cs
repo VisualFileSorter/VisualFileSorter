@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using Avalonia;
@@ -976,10 +977,36 @@ namespace VisualFileSorter.ViewModels
             return true;
         }
 
+        // Save FullPath of Files in FileQueue as .json file.
+        // TODO: Save FullPath, Shortcut Label, and Un-Transferred file list from SortFolderQueue.
+        // TODO: Check directory for SavedSession.json, if exists, alert user that SaveSession() will overwrite the previous session.
+        // TODO: Make threadsafe.
         private bool SaveSession()
         {
+            string jsonString = "";
+
+            foreach (FileQueueItem fileItem in FileQueue) // For each fileItem's FullName (aka Full Path) in FileQueue, Serialize into a singular .json string.
+            {
+                jsonString += JsonSerializer.Serialize(fileItem.FullName);
+            }
+
+            foreach (SortFolder folderItem in SortFolderQueue)
+            {
+                jsonString += JsonSerializer.Serialize(folderItem.FullName);
+                jsonString += JsonSerializer.Serialize(folderItem.ShortcutLabel);
+                // How to get collection of unsorted files?
+                foreach (var item in folderItem.SortSrcFiles)
+                {
+                    jsonString += JsonSerializer.Serialize(item.Key); // Transferred files list???
+                }
+
+            }
+
+            File.WriteAllText(@"SavedSession.json", jsonString); // Write complete jsonString to a file and save it.
+
             return true;
         }
+
         #endregion Open/Save Session
 
         #region Properties and Members
