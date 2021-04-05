@@ -1085,7 +1085,7 @@ namespace VisualFileSorter.ViewModels
                 }
                 catch (Exception)
                 {
-                    // TODO Create error saving session dialog
+                    // TODO Create error saving/loading session dialog
                 }
             }
         }
