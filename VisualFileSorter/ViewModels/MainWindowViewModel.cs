@@ -1,3 +1,10 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,19 +14,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Platform;
-using Avalonia.Threading;
-using ReactiveUI;
-
 using VisualFileSorter.Helpers;
 using VisualFileSorter.Models;
 
@@ -1024,7 +1019,7 @@ namespace VisualFileSorter.ViewModels
         // Open a VFS session file
         private async void OpenSession()
         {
-            // Check if the current session is empty
+            // Check if the current session is not empty.
             if (CurrentFileQueueItem?.FullName != null || 0 < FileQueue.Count() || 0 < SortFolderQueue.Count())
             {
                 var result = await OpenReplaceSessionDialog();
@@ -1032,8 +1027,9 @@ namespace VisualFileSorter.ViewModels
                 {
                     return;
                 }
+                // TODO: If user confirms overwriting of session, start OpenSession procedures.
             }
-            else
+            else // If empty.
             {
                 // Prompt user for file selection of session to be opened.
                 var dlg = new OpenFileDialog();
@@ -1044,16 +1040,23 @@ namespace VisualFileSorter.ViewModels
                 var result = await dlg.ShowAsync(mHostWindow);
                 if (result != null)
                 {
-                    try // Derialize Json into a Session instance.
+                    try
                     {
                         // Create "new" session for opened .vfss file.
                         Session openedSession = new Session();
-                        // Deserialize .vfss file and fill current session from Json content.
-                        openedSession.Deserialize(result.ToString());
+                        // Store serialized JSON into jsonString to be deserialized.
+                        string jsonString = File.ReadAllText(result[0]);
+                        // Deserialize JSON into openedSession instance.
+                        openedSession = openedSession.Deserialize(jsonString);
+
+                        // Take FileQueue List<string> and fill an array with the contents.
+                        string[] fileQueueArray = openedSession.FileQueue.ToArray();
+                        // Add fileQueue from saved session to the view.
+                        AddFilesToSession(fileQueueArray);
                     }
                     catch (Exception)
                     {
-                        // TODO: Create error opening session dialog.
+                        //TODO: Create error opening session dialog.
                     }
                 }
             }
@@ -1068,7 +1071,7 @@ namespace VisualFileSorter.ViewModels
             Session saveSession = new Session();
 
             // Get each file in the file queue
-            foreach (FileQueueItem fileItem in FileQueue) 
+            foreach (FileQueueItem fileItem in FileQueue)
             {
                 saveSession.FileQueue.Add(fileItem.FullName);
             }
