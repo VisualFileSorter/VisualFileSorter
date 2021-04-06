@@ -371,6 +371,36 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
+        public void AddSortDirectoriesFromSavedSession(SortFolderJson savedSortFolder)
+        {
+            lock (mSortFolderQueueLock)
+            {
+                foreach (SortFolder sortFolderItem in SortFolderQueue)
+                {
+                    if (sortFolderItem.FullName == savedSortFolder.FullName)
+                    {
+                        return;
+                    }
+                }
+
+                SortFolder tempFolderQueueItem = new SortFolder();
+                tempFolderQueueItem.FullName = savedSortFolder.FullName;
+                // Convert from string[] to ConcurrentDictionary<string, string>.
+                int keyNum = 0;
+                foreach (string sortedFile in savedSortFolder.SortSrcFiles)
+                {
+                    keyNum++;
+                    tempFolderQueueItem.SortSrcFiles.TryAdd($"{keyNum}", sortedFile);
+                }
+                // Set Sort Folders from JSON.
+                tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
+                tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
+                SortFolderQueue.Enqueue(tempFolderQueueItem);
+            }
+        }
+
         // On every keystroke, pass the gesture to the SortFile method
         public IDisposable AttachShortcut(TopLevel root)
         {
@@ -1027,7 +1057,7 @@ namespace VisualFileSorter.ViewModels
                 {
                     return;
                 }
-                // TODO: If user confirms overwriting of session, start OpenSession procedures.
+                // TODO: If user confirms overwriting of session, clear current session before starting OpenSession procedures.
             }
             else // If empty.
             {
@@ -1053,6 +1083,12 @@ namespace VisualFileSorter.ViewModels
                         string[] fileQueueArray = openedSession.FileQueue.ToArray();
                         // Add fileQueue from saved session to the view.
                         AddFilesToSession(fileQueueArray);
+
+                        // Take all SortFolder data from openedSession and present to the view.
+                        foreach (SortFolderJson savedSortFolder in openedSession.SortFolders)
+                        {
+                            AddSortDirectoriesFromSavedSession(savedSortFolder);
+                        }
                     }
                     catch (Exception)
                     {
