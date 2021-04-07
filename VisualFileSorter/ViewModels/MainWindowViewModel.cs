@@ -1049,7 +1049,7 @@ namespace VisualFileSorter.ViewModels
 
         #endregion Undo/Redo Operations
 
-        #region Open/Save Session
+        #region Open/Save/Clear Session
 
         // Open a VFS session file
         private async void OpenSession()
@@ -1062,11 +1062,12 @@ namespace VisualFileSorter.ViewModels
                 {
                     return;
                 }
-                // TODO: If user confirms overwriting of session, clear current session before starting OpenSession procedures.
+                // If user confirms opening/overwriting of session, clear current session before starting OpenSession procedures.
                 else
                 {
                     // Clear current session.
-
+                    ClearSession();
+                    OpenSession();
                 }
             }
             else // If empty.
@@ -1106,8 +1107,6 @@ namespace VisualFileSorter.ViewModels
                     }
                 }
             }
-
-
         }
 
         // Save current session as json
@@ -1163,7 +1162,23 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        #endregion Open/Save Session
+        private void ClearSession()
+        {
+            try
+            {
+                // TODO: FIX BELOW
+                // Clearing the session like this is causing an exception due to evaluation of null assignment.
+                this.FileQueue = new ObservableQueue<FileQueueItem>();
+                this.SortFolderQueue = new ObservableQueue<SortFolder>();
+                this.CurrentFileQueueItem = new FileQueueItem();
+            }
+            catch (Exception)
+            {
+                //TODO: Create error clearing session dialog.
+            }
+        }
+
+        #endregion Open/Save/Clear Session
 
         #region Properties and Members
 
