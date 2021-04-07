@@ -1,3 +1,10 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,19 +14,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Platform;
-using Avalonia.Threading;
-using ReactiveUI;
-
 using VisualFileSorter.Helpers;
 using VisualFileSorter.Models;
 
@@ -373,6 +368,41 @@ namespace VisualFileSorter.ViewModels
                     tempFolderQueueItem.Name = Path.GetFileName(result);
                     SortFolderQueue.Enqueue(tempFolderQueueItem);
                 }
+            }
+        }
+
+        public void AddSortDirectoriesFromSavedSession(SortFolderJson savedSortFolder)
+        {
+            lock (mSortFolderQueueLock)
+            {
+                foreach (SortFolder sortFolderItem in SortFolderQueue)
+                {
+                    if (sortFolderItem.FullName == savedSortFolder.FullName)
+                    {
+                        return;
+                    }
+                }
+
+                SortFolder tempFolderQueueItem = new SortFolder();
+                tempFolderQueueItem.FullName = savedSortFolder.FullName;
+                // Convert from string[] to ConcurrentDictionary<string, string>.
+                foreach (string sortedFile in savedSortFolder.SortSrcFiles)
+                {
+                    tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
+                }
+                // Set Sort Folders from JSON.
+                if (savedSortFolder.Shortcut != "            ") // If shortcut is set in Saved Session.
+                {
+                    tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
+                    tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                    tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                }
+                else
+                {
+                    tempFolderQueueItem.ShortcutButtonContent = "Add Shortcut";
+                }
+                tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
+                SortFolderQueue.Enqueue(tempFolderQueueItem);
             }
         }
 
@@ -1019,12 +1049,12 @@ namespace VisualFileSorter.ViewModels
 
         #endregion Undo/Redo Operations
 
-        #region Open/Save Session
+        #region Open/Save/Clear Session
 
         // Open a VFS session file
         private async void OpenSession()
         {
-            // Check if the current session is empty
+            // Check if the current session is not empty.
             if (CurrentFileQueueItem?.FullName != null || 0 < FileQueue.Count() || 0 < SortFolderQueue.Count())
             {
                 var result = await OpenReplaceSessionDialog();
@@ -1032,9 +1062,51 @@ namespace VisualFileSorter.ViewModels
                 {
                     return;
                 }
+                // If user confirms opening/overwriting of session, clear current session before starting OpenSession procedures.
+                else
+                {
+                    // Clear current session.
+                    ClearSession();
+                    OpenSession();
+                }
             }
+            else // If empty.
+            {
+                // Prompt user for file selection of session to be opened.
+                var dlg = new OpenFileDialog();
+                dlg.Title = "Open Session";
+                dlg.AllowMultiple = false;
+                dlg.InitialFileName = "VFS_Session.vfss";
+                dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var result = await dlg.ShowAsync(mHostWindow);
+                if (result != null)
+                {
+                    try
+                    {
+                        // Create "new" session for opened .vfss file.
+                        Session openedSession = new Session();
+                        // Store serialized JSON into jsonString to be deserialized.
+                        string jsonString = File.ReadAllText(result[0]);
+                        // Deserialize JSON into openedSession instance.
+                        openedSession = openedSession.Deserialize(jsonString);
 
+                        // Take FileQueue List<string> and fill an array with the contents.
+                        string[] fileQueueArray = openedSession.FileQueue.ToArray();
+                        // Add fileQueue from saved session to the view.
+                        AddFilesToSession(fileQueueArray);
 
+                        // Take all SortFolder data from openedSession and present to the view.
+                        foreach (SortFolderJson savedSortFolder in openedSession.SortFolders)
+                        {
+                            AddSortDirectoriesFromSavedSession(savedSortFolder);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //TODO: Create error opening session dialog.
+                    }
+                }
+            }
         }
 
         // Save current session as json
@@ -1044,7 +1116,7 @@ namespace VisualFileSorter.ViewModels
             Session saveSession = new Session();
 
             // Get each file in the file queue
-            foreach (FileQueueItem fileItem in FileQueue) 
+            foreach (FileQueueItem fileItem in FileQueue)
             {
                 saveSession.FileQueue.Add(fileItem.FullName);
             }
@@ -1090,7 +1162,21 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        #endregion Open/Save Session
+        private void ClearSession()
+        {
+            try
+            {
+                this.FileQueue = new ObservableQueue<FileQueueItem>();
+                this.SortFolderQueue = new ObservableQueue<SortFolder>();
+                this.CurrentFileQueueItem = new FileQueueItem();
+            }
+            catch (Exception)
+            {
+                //TODO: Create error clearing session dialog.
+            }
+        }
+
+        #endregion Open/Save/Clear Session
 
         #region Properties and Members
 
