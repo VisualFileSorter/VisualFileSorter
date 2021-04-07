@@ -1166,8 +1166,6 @@ namespace VisualFileSorter.ViewModels
         {
             try
             {
-                // TODO: FIX BELOW
-                // Clearing the session like this is causing an exception due to evaluation of null assignment.
                 this.FileQueue = new ObservableQueue<FileQueueItem>();
                 this.SortFolderQueue = new ObservableQueue<SortFolder>();
                 this.CurrentFileQueueItem = new FileQueueItem();
