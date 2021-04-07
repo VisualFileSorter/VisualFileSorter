@@ -690,16 +690,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 120;
             messageVM.MessageWindowErrorIcon = true;
-            messageVM.MessageWindowWarningIcon = false;
-            messageVM.MessageWindowInfoIcon = false;
-
             messageVM.MB_MissingSortFolderVisible = true;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -714,17 +705,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 410;
             messageVM.MessageWindowHeight = 135;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
             messageVM.MB_RemoveSortFolderVisible = true;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -747,17 +729,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 267;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
             messageVM.MB_MissingTransferFilesVisible = true;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ReplaceSessionVisible = false;
             messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
 
             // Show the message box
@@ -781,17 +754,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Information";
             messageVM.MessageWindowWidth = 315;
             messageVM.MessageWindowHeight = 120;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
             messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
             messageVM.MB_BadFileTransferVisible = true;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -806,17 +770,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 227;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = true;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
-            messageVM.MB_ReplaceSessionVisible = false;
             messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
 
             // Show the message box
@@ -832,17 +787,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Information";
             messageVM.MessageWindowWidth = 250;
             messageVM.MessageWindowHeight = 100;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
             messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = true;
-            messageVM.MB_ReplaceSessionVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -857,16 +803,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 400;
             messageVM.MessageWindowHeight = 100;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
             messageVM.MB_ReplaceSessionVisible = true;
 
             // Show the message box
@@ -879,6 +816,40 @@ namespace VisualFileSorter.ViewModels
             {
                 return DialogResult.Cancel;
             }
+        }
+
+        // Display error that opening the session went wrong
+        public async void OpenSessionErrorDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Error";
+            messageVM.MessageWindowWidth = 290;
+            messageVM.MessageWindowHeight = 60;
+            messageVM.MessageWindowErrorIcon = true;
+            messageVM.MB_OpenSaveSessionErrorVisible = true;
+            messageVM.MB_OpenSaveSessionErrorMsg = "Unexpected error while reading .VFSS file!";
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
+        }
+
+        // Display error that saving the session went wrong
+        public async void SaveSessionErrorDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Error";
+            messageVM.MessageWindowWidth = 290;
+            messageVM.MessageWindowHeight = 60;
+            messageVM.MessageWindowErrorIcon = true;
+            messageVM.MB_OpenSaveSessionErrorVisible = true;
+            messageVM.MB_OpenSaveSessionErrorMsg = "Unexpected error while saving .VFSS file!";
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
         }
 
         #endregion Show MessageBox Methods
@@ -1017,6 +988,7 @@ namespace VisualFileSorter.ViewModels
             var dlg = new OpenFileDialog();
             dlg.Title = "Open Session";
             dlg.AllowMultiple = false;
+            dlg.Filters.Add(new FileDialogFilter() { Name = "VFS Session", Extensions = { "vfss" } });
             dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var fileResult = await dlg.ShowAsync(mHostWindow);
             if (fileResult != null && 0 < fileResult.Count())
@@ -1077,7 +1049,7 @@ namespace VisualFileSorter.ViewModels
                 }
                 catch (Exception)
                 {
-                    //TODO: Create error opening session dialog.
+                    OpenSessionErrorDialog();
                 }
             }
         }
@@ -1130,7 +1102,7 @@ namespace VisualFileSorter.ViewModels
                 }
                 catch (Exception)
                 {
-                    // TODO Create error saving/loading session dialog
+                    SaveSessionErrorDialog();
                 }
             }
         }

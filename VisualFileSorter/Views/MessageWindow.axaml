@@ -168,6 +168,24 @@
                   Command="{Binding CancelCmd}"/>
         </StackPanel>
       </Grid>
+
+      <!--Open/Save Session Error-->
+      <Grid IsVisible="{Binding MB_OpenSaveSessionErrorVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.RowSpan="2" HorizontalContentAlignment="Center" Content="{Binding MB_OpenSaveSessionErrorMsg}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+
+          <Button Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+      </Grid>
     </Grid>
   </DockPanel>
 </Window>
