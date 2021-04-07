@@ -386,15 +386,14 @@ namespace VisualFileSorter.ViewModels
                 SortFolder tempFolderQueueItem = new SortFolder();
                 tempFolderQueueItem.FullName = savedSortFolder.FullName;
                 // Convert from string[] to ConcurrentDictionary<string, string>.
-                int keyNum = 0;
                 foreach (string sortedFile in savedSortFolder.SortSrcFiles)
                 {
-                    keyNum++;
-                    tempFolderQueueItem.SortSrcFiles.TryAdd($"{keyNum}", sortedFile);
+                    tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
                 }
                 // Set Sort Folders from JSON.
                 tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
                 tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                // TODO: Check if there is a current shortcut before setting to Edit Shortcut.
                 tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
                 tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
                 SortFolderQueue.Enqueue(tempFolderQueueItem);
@@ -1058,6 +1057,11 @@ namespace VisualFileSorter.ViewModels
                     return;
                 }
                 // TODO: If user confirms overwriting of session, clear current session before starting OpenSession procedures.
+                else
+                {
+                    // Clear current session.
+
+                }
             }
             else // If empty.
             {
