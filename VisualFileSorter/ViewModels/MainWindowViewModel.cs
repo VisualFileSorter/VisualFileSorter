@@ -391,10 +391,16 @@ namespace VisualFileSorter.ViewModels
                     tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
                 }
                 // Set Sort Folders from JSON.
-                tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
-                tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
-                // TODO: Check if there is a current shortcut before setting to Edit Shortcut.
-                tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                if (savedSortFolder.Shortcut != "            ") // If shortcut is set in Saved Session.
+                {
+                    tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
+                    tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                    tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                }
+                else
+                {
+                    tempFolderQueueItem.ShortcutButtonContent = "Add Shortcut";
+                }
                 tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
                 SortFolderQueue.Enqueue(tempFolderQueueItem);
             }
