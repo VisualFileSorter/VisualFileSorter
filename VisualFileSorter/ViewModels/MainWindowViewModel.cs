@@ -371,41 +371,6 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        public void AddSortDirectoriesFromSavedSession(SortFolderJson savedSortFolder)
-        {
-            lock (mSortFolderQueueLock)
-            {
-                foreach (SortFolder sortFolderItem in SortFolderQueue)
-                {
-                    if (sortFolderItem.FullName == savedSortFolder.FullName)
-                    {
-                        return;
-                    }
-                }
-
-                SortFolder tempFolderQueueItem = new SortFolder();
-                tempFolderQueueItem.FullName = savedSortFolder.FullName;
-                // Convert from string[] to ConcurrentDictionary<string, string>.
-                foreach (string sortedFile in savedSortFolder.SortSrcFiles)
-                {
-                    tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
-                }
-                // Set Sort Folders from JSON.
-                if (savedSortFolder.Shortcut != "            ") // If shortcut is set in Saved Session.
-                {
-                    tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
-                    tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
-                    tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
-                }
-                else
-                {
-                    tempFolderQueueItem.ShortcutButtonContent = "Add Shortcut";
-                }
-                tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
-                SortFolderQueue.Enqueue(tempFolderQueueItem);
-            }
-        }
-
         // On every keystroke, pass the gesture to the SortFile method
         public IDisposable AttachShortcut(TopLevel root)
         {
@@ -1049,7 +1014,7 @@ namespace VisualFileSorter.ViewModels
 
         #endregion Undo/Redo Operations
 
-        #region Open/Save/Clear Session
+        #region Open/Save Session
 
         // Open a VFS session file
         private async void OpenSession()
@@ -1057,54 +1022,78 @@ namespace VisualFileSorter.ViewModels
             // Check if the current session is not empty.
             if (CurrentFileQueueItem?.FullName != null || 0 < FileQueue.Count() || 0 < SortFolderQueue.Count())
             {
-                var result = await OpenReplaceSessionDialog();
-                if (result == DialogResult.Cancel)
+                var dialogResult = await OpenReplaceSessionDialog();
+                if (dialogResult == DialogResult.Cancel)
                 {
                     return;
                 }
-                // If user confirms opening/overwriting of session, clear current session before starting OpenSession procedures.
-                else
-                {
-                    // Clear current session.
-                    ClearSession();
-                    OpenSession();
-                }
             }
-            else // If empty.
+
+            // Prompt user for file selection of session to be opened.
+            var dlg = new OpenFileDialog();
+            dlg.Title = "Open Session";
+            dlg.AllowMultiple = false;
+            dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var fileResult = await dlg.ShowAsync(mHostWindow);
+            if (fileResult != null && 0 < fileResult.Count())
             {
-                // Prompt user for file selection of session to be opened.
-                var dlg = new OpenFileDialog();
-                dlg.Title = "Open Session";
-                dlg.AllowMultiple = false;
-                dlg.InitialFileName = "VFS_Session.vfss";
-                dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var result = await dlg.ShowAsync(mHostWindow);
-                if (result != null)
+                try
                 {
-                    try
+                    // Clear current session
+                    FileQueue = new ObservableQueue<FileQueueItem>();
+                    SortFolderQueue = new ObservableQueue<SortFolder>();
+                    CurrentFileQueueItem = null;
+
+                    // Create new session for opened .vfss file.
+                    Session openedSession = new Session();
+                    string jsonString = File.ReadAllText(fileResult[0]);
+                    openedSession = openedSession.Deserialize(jsonString);
+
+                    if (openedSession != null)
                     {
-                        // Create "new" session for opened .vfss file.
-                        Session openedSession = new Session();
-                        // Store serialized JSON into jsonString to be deserialized.
-                        string jsonString = File.ReadAllText(result[0]);
-                        // Deserialize JSON into openedSession instance.
-                        openedSession = openedSession.Deserialize(jsonString);
-
-                        // Take FileQueue List<string> and fill an array with the contents.
-                        string[] fileQueueArray = openedSession.FileQueue.ToArray();
-                        // Add fileQueue from saved session to the view.
-                        AddFilesToSession(fileQueueArray);
-
-                        // Take all SortFolder data from openedSession and present to the view.
-                        foreach (SortFolderJson savedSortFolder in openedSession.SortFolders)
+                        if (openedSession.FileQueue != null
+                            && 0 < openedSession.FileQueue.Count()
+                            && openedSession.FileQueue[0] != null)
                         {
-                            AddSortDirectoriesFromSavedSession(savedSortFolder);
+                            // Add FileQueue from saved session to the view
+                            AddFilesToSession(openedSession.FileQueue.ToArray());
+                        }
+
+                        if (openedSession.SortFolders != null)
+                        {
+                            lock (mSortFolderQueueLock)
+                            {
+                                // Add SortFolders from saved session to the view
+                                foreach (SortFolderJson savedSortFolder in openedSession.SortFolders)
+                                {
+                                    SortFolder tempFolderQueueItem = new SortFolder();
+                                    tempFolderQueueItem.FullName = savedSortFolder.FullName;
+                                    foreach (string sortedFile in savedSortFolder.SortSrcFiles)
+                                    {
+                                        tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
+                                    }
+
+                                    // If shortcut is set in Saved Session.
+                                    if (!String.IsNullOrWhiteSpace(savedSortFolder.Shortcut)) 
+                                    {
+                                        tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
+                                        tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                                        tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                                    }
+                                    else
+                                    {
+                                        tempFolderQueueItem.ShortcutButtonContent = "Add Shortcut";
+                                    }
+                                    tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
+                                    SortFolderQueue.Enqueue(tempFolderQueueItem);
+                                }
+                            }
                         }
                     }
-                    catch (Exception)
-                    {
-                        //TODO: Create error opening session dialog.
-                    }
+                }
+                catch (Exception)
+                {
+                    //TODO: Create error opening session dialog.
                 }
             }
         }
@@ -1115,16 +1104,16 @@ namespace VisualFileSorter.ViewModels
             // Create new session
             Session saveSession = new Session();
 
-            // Get each file in the file queue
-            foreach (FileQueueItem fileItem in FileQueue)
-            {
-                saveSession.FileQueue.Add(fileItem.FullName);
-            }
-
             // Get the CurrentFileQueueItem filepath
             if (CurrentFileQueueItem != null)
             {
                 saveSession.FileQueue.Add(CurrentFileQueueItem.FullName);
+            }
+
+            // Get each file in the file queue
+            foreach (FileQueueItem fileItem in FileQueue)
+            {
+                saveSession.FileQueue.Add(fileItem.FullName);
             }
 
             // Get each SortFolder
@@ -1162,25 +1151,11 @@ namespace VisualFileSorter.ViewModels
             }
         }
 
-        private void ClearSession()
-        {
-            try
-            {
-                this.FileQueue = new ObservableQueue<FileQueueItem>();
-                this.SortFolderQueue = new ObservableQueue<SortFolder>();
-                this.CurrentFileQueueItem = new FileQueueItem();
-            }
-            catch (Exception)
-            {
-                //TODO: Create error clearing session dialog.
-            }
-        }
-
-        #endregion Open/Save/Clear Session
+        #endregion Open/Save Session
 
         #region Properties and Members
 
-        public FileQueueItem CurrentFileQueueItem
+        public FileQueueItem? CurrentFileQueueItem
         {
             get => mCurrentFileQueueItem;
             set => this.RaiseAndSetIfChanged(ref mCurrentFileQueueItem, value);
@@ -1230,7 +1205,7 @@ namespace VisualFileSorter.ViewModels
 
         private ObservableQueue<SortFolder> mSortFolderQueue = new ObservableQueue<SortFolder>();
         private ObservableQueue<FileQueueItem> mFileQueue = new ObservableQueue<FileQueueItem>();
-        private FileQueueItem mCurrentFileQueueItem = new FileQueueItem();
+        private FileQueueItem? mCurrentFileQueueItem = new FileQueueItem();
         private CircularBuffer<UndoRedoItem> mUndoBuffer = new CircularBuffer<UndoRedoItem>(30);
         private CircularBuffer<UndoRedoItem> mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
         private Window mHostWindow;
