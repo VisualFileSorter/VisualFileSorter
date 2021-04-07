@@ -233,9 +233,10 @@
       <!--Ribbon-->
       <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="#CCD5F0">
         <StackPanel Orientation="Horizontal">
+          
           <!--Open Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  HotKey="Ctrl + O" Command="{Binding OpenSessionCmd}">
+                  HotKey="Ctrl + O" ToolTip.Tip="Open a saved session." Command="{Binding OpenSessionCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -250,7 +251,7 @@
 
           <!--Save Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  HotKey="Ctrl + S" Command="{Binding SaveSessionCmd}">
+                  HotKey="Ctrl + S" ToolTip.Tip="Save current session." Command="{Binding SaveSessionCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
