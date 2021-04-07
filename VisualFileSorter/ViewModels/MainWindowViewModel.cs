@@ -584,28 +584,12 @@ namespace VisualFileSorter.ViewModels
                         string[] splitShortcut = shortcutStr.Split('+');
                         if (2 == splitShortcut.Count())
                         {
-                            // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
-                            if (splitShortcut[1].Contains("Oem"))
-                            {
-                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1].Remove(0, 3);
-                            }
-                            else
-                            {
-                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
-                            }
+                            sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
                         }
                     }
                     else
                     {
-                        // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
-                        if (shortcutStr.Contains("Oem"))
-                        {
-                            sortFolder.ShortcutLabel = shortcutStr.Remove(0, 3);
-                        }
-                        else
-                        {
-                            sortFolder.ShortcutLabel = shortcutStr;
-                        }
+                        sortFolder.ShortcutLabel = shortcutStr;
                     }
                 }
             }
