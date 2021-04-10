@@ -112,6 +112,18 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_ShortcutAlreadyExistsVisible, value);
         }
 
+        public bool MB_ReplaceSessionVisible
+        {
+            get => mMB_ReplaceSessionVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_ReplaceSessionVisible, value);
+        }
+
+        public bool MB_OpenSaveSessionErrorVisible
+        {
+            get => mMB_OpenSaveSessionErrorVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_OpenSaveSessionErrorVisible, value);
+        }
+
         public string MB_ImportFilesAlreadyInList
         {
             get => mMB_ImportFilesAlreadyInList;
@@ -124,8 +136,15 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_MissingTransferFilesList, value);
         }
 
+        public string MB_OpenSaveSessionErrorMsg
+        {
+            get => mMB_OpenSaveSessionErrorMsg;
+            set => this.RaiseAndSetIfChanged(ref mMB_OpenSaveSessionErrorMsg, value);
+        }
+
         private string mMB_ImportFilesAlreadyInList = String.Empty;
         private string mMB_MissingTransferFilesList = String.Empty;
+        private string mMB_OpenSaveSessionErrorMsg = String.Empty;
         private string mMessageWindowTitle = String.Empty;
         private int mMessageWindowWidth = 300;
         private int mMessageWindowHeight = 120;
@@ -138,6 +157,9 @@ namespace VisualFileSorter.ViewModels
         private bool mMB_BadFileTransferVisible = false;
         private bool mMB_ImportFilesAlreadyInVisible = false;
         private bool mMB_ShortcutAlreadyExistsVisible = false;
+        private bool mMB_ReplaceSessionVisible = false;
+        private bool mMB_OpenSaveSessionErrorVisible = false;
+
         #endregion Message Window Properties
     }
 }

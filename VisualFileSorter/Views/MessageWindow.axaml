@@ -106,7 +106,6 @@
                   Margin="5"
                   Command="{Binding OkCmd}"/>
         </StackPanel>
-
       </Grid>
 
       <!--Import Files Already In Warning-->
@@ -139,9 +138,50 @@
         <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Shortcut already exists!&#10;&#10;Please select a different shortcut."/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom">
-          <Button Grid.Row="1" Content="OK"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+          
+          <Button Content="OK"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+        </StackPanel>
+      </Grid>
+
+      <!--Replace Session Warning-->
+      <Grid IsVisible="{Binding MB_ReplaceSessionVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.RowSpan="2" HorizontalContentAlignment="Center" Content="Opening this session will replace your current session.&#10;Any unsaved progress in the current session will be lost!&#10;&#10;Continue?"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+          
+          <Button Content="Yes"
+                  Margin="5"
+                  Command="{Binding OkCmd}"/>
+
+          <Button Content="No"
+                  Margin="5"
+                  Command="{Binding CancelCmd}"/>
+        </StackPanel>
+      </Grid>
+
+      <!--Open/Save Session Error-->
+      <Grid IsVisible="{Binding MB_OpenSaveSessionErrorVisible}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.RowSpan="2" HorizontalContentAlignment="Center" Content="{Binding MB_OpenSaveSessionErrorMsg}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+
+          <Button Content="OK"
                   Margin="5"
                   Command="{Binding OkCmd}"/>
         </StackPanel>
