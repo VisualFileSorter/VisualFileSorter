@@ -88,10 +88,10 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_RemoveSortFolderVisible, value);
         }
 
-        public bool MB_MissingTransferFilesVisible
+        public bool MB_MissingFilesVisible
         {
-            get => mMB_MissingTransferFilesVisible;
-            set => this.RaiseAndSetIfChanged(ref mMB_MissingTransferFilesVisible, value);
+            get => mMB_MissingFilesVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingFilesVisible, value);
         }
 
         public bool MB_BadFileTransferVisible
@@ -130,10 +130,22 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mMB_ImportFilesAlreadyInList, value);
         }
 
-        public string MB_MissingTransferFilesList
+        public string MB_MissingFilesMsg
         {
-            get => mMB_MissingTransferFilesList;
-            set => this.RaiseAndSetIfChanged(ref mMB_MissingTransferFilesList, value);
+            get => mMB_MissingFilesMsg;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingFilesMsg, value);
+        }
+
+        public bool MB_MissingFilesCancelVisible
+        {
+            get => mMB_MissingFilesCancelVisible;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingFilesCancelVisible, value);
+        }
+
+        public string MB_MissingFilesList
+        {
+            get => mMB_MissingFilesList;
+            set => this.RaiseAndSetIfChanged(ref mMB_MissingFilesList, value);
         }
 
         public string MB_OpenSaveSessionErrorMsg
@@ -143,7 +155,8 @@ namespace VisualFileSorter.ViewModels
         }
 
         private string mMB_ImportFilesAlreadyInList = String.Empty;
-        private string mMB_MissingTransferFilesList = String.Empty;
+        private string mMB_MissingFilesList = String.Empty;
+        private string mMB_MissingFilesMsg = String.Empty;
         private string mMB_OpenSaveSessionErrorMsg = String.Empty;
         private string mMessageWindowTitle = String.Empty;
         private int mMessageWindowWidth = 300;
@@ -153,12 +166,13 @@ namespace VisualFileSorter.ViewModels
         private bool mMessageWindowInfoIcon = false;
         private bool mMB_MissingSortFolderVisible = false;
         private bool mMB_RemoveSortFolderVisible = false;
-        private bool mMB_MissingTransferFilesVisible = false;
+        private bool mMB_MissingFilesVisible = false;
         private bool mMB_BadFileTransferVisible = false;
         private bool mMB_ImportFilesAlreadyInVisible = false;
         private bool mMB_ShortcutAlreadyExistsVisible = false;
         private bool mMB_ReplaceSessionVisible = false;
         private bool mMB_OpenSaveSessionErrorVisible = false;
+        private bool mMB_MissingFilesCancelVisible = true;
 
         #endregion Message Window Properties
     }

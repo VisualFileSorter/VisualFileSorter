@@ -66,17 +66,18 @@
         </StackPanel>
       </Grid>
 
-      <!--Missing transfer files Warning-->
-      <Grid IsVisible="{Binding MB_MissingTransferFilesVisible}">
+      <!--Missing files Warning-->
+      <Grid IsVisible="{Binding MB_MissingFilesVisible}">
         <Grid.RowDefinitions>
-          <RowDefinition Height="80"/>
+          <RowDefinition Height="auto"/>
           <RowDefinition Height="150"/>
           <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" HorizontalContentAlignment="Center" Content="Below transfer files no longer exist!&#10;&#10;OK: Will transfer the files that are not missing&#10;Cancel: Cancels the transfer files operation"/>
+        <Label Grid.Row="0" HorizontalContentAlignment="Center"
+               Content="{Binding MB_MissingFilesMsg}"/>
 
         <TextBox Grid.Row="1" Margin="5,5,5,0" IsReadOnly="True"
-                 Text="{Binding MB_MissingTransferFilesList}"/>
+                 Text="{Binding MB_MissingFilesList}"/>
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom">
@@ -84,9 +85,10 @@
           <Button Content="OK"
                   Margin="5,5,5,10"
                   Command="{Binding OkCmd}"/>
-
+          
           <Button Content="Cancel"
                   Margin="5,5,5,10"
+                  IsVisible="{Binding MB_MissingFilesCancelVisible}"
                   Command="{Binding CancelCmd}"/>
         </StackPanel>
       </Grid>

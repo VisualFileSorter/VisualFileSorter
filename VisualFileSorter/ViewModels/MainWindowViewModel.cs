@@ -113,12 +113,20 @@ namespace VisualFileSorter.ViewModels
         }
 
         // Adds an array of files to the session
-        private void AddFilesToSession(string[] files)
+        private List<string> AddFilesToSession(string[] files)
         {
             List<FileQueueItem> fileItems = new List<FileQueueItem>();
-            List<string> alreadyInfileItems = new List<string>();
+            List<string> alreadyInFileItems = new List<string>();
+            List<string> missingFileItems = new List<string>();
             foreach (string fileItem in files)
             {
+                // Check file still exists
+                if (!File.Exists(fileItem))
+                {
+                    missingFileItems.Add(fileItem);
+                    continue;
+                }
+
                 // Make sure file is not already in VFS
                 if (!CheckForFileInSession(fileItem))
                 {
@@ -145,7 +153,7 @@ namespace VisualFileSorter.ViewModels
                 }
                 else
                 {
-                    alreadyInfileItems.Add(fileItem);
+                    alreadyInFileItems.Add(fileItem);
                 }
             }
             FileQueue.EnqueueRange(fileItems);
@@ -171,10 +179,13 @@ namespace VisualFileSorter.ViewModels
             }
 
             // Display message that some files have already been imported
-            if (0 < alreadyInfileItems.Count())
+            if (0 < alreadyInFileItems.Count())
             {
-                OpenImportFilesAlreadyInDialog(alreadyInfileItems);
+                OpenImportFilesAlreadyInDialog(alreadyInFileItems);
             }
+
+            // Return any missing file items
+            return missingFileItems;
         }
 
         // Transfer the files
@@ -728,10 +739,12 @@ namespace VisualFileSorter.ViewModels
 
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 300;
-            messageVM.MessageWindowHeight = 267;
+            messageVM.MessageWindowHeight = 260;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MB_MissingTransferFilesVisible = true;
-            messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
+            messageVM.MB_MissingFilesVisible = true;
+            messageVM.MB_MissingFilesCancelVisible = true;
+            messageVM.MB_MissingFilesMsg = "Below transfer files no longer exist!\n\nOK: Will transfer the files that are not missing\nCancel: Cancels the transfer files operation";
+            messageVM.MB_MissingFilesList = string.Join("\n", missingSrcFiles);
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -743,6 +756,25 @@ namespace VisualFileSorter.ViewModels
             {
                 return DialogResult.Cancel;
             }
+        }
+
+        // Display a warning that session files no longer exist
+        public async void OpenMissingSessionFilesDialog(List<string> missingSrcFiles)
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 300;
+            messageVM.MessageWindowHeight = 210;
+            messageVM.MessageWindowWarningIcon = true;
+            messageVM.MB_MissingFilesVisible = true;
+            messageVM.MB_MissingFilesCancelVisible = false;
+            messageVM.MB_MissingFilesMsg = "Below session files no longer exist!";
+            messageVM.MB_MissingFilesList = string.Join("\n", missingSrcFiles);
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
         }
 
         // Display information that something went wrong with the shell moving/copying of files
@@ -1007,12 +1039,13 @@ namespace VisualFileSorter.ViewModels
 
                     if (openedSession != null)
                     {
+                        List<string> missingFileItems = new List<string>();
                         if (openedSession.FileQueue != null
                             && 0 < openedSession.FileQueue.Count()
                             && openedSession.FileQueue[0] != null)
                         {
                             // Add FileQueue from saved session to the view
-                            AddFilesToSession(openedSession.FileQueue.ToArray());
+                            missingFileItems = AddFilesToSession(openedSession.FileQueue.ToArray());
                         }
 
                         if (openedSession.SortFolders != null)
@@ -1026,7 +1059,14 @@ namespace VisualFileSorter.ViewModels
                                     tempFolderQueueItem.FullName = savedSortFolder.FullName;
                                     foreach (string sortedFile in savedSortFolder.SortSrcFiles)
                                     {
-                                        tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
+                                        if (!File.Exists(sortedFile))
+                                        {
+                                            missingFileItems.Add(sortedFile);
+                                        }
+                                        else
+                                        {
+                                            tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
+                                        }
                                     }
 
                                     // If shortcut is set in Saved Session.
@@ -1044,6 +1084,11 @@ namespace VisualFileSorter.ViewModels
                                     SortFolderQueue.Enqueue(tempFolderQueueItem);
                                 }
                             }
+                        }
+
+                        if (0 < missingFileItems.Count())
+                        {
+                            OpenMissingSessionFilesDialog(missingFileItems);
                         }
                     }
                 }
