@@ -1,3 +1,10 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,20 +15,8 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Platform;
-using Avalonia.Threading;
-using ReactiveUI;
-
 using VisualFileSorter.Helpers;
-
-// TODO
-// Add open and save json files
-// Add warning dialog that opening a session will replace the current session
+using VisualFileSorter.Models;
 
 namespace VisualFileSorter.ViewModels
 {
@@ -42,6 +37,8 @@ namespace VisualFileSorter.ViewModels
             RemapSortFolderLocationCmd = ReactiveCommand.Create<SortFolder>(RemapSortFolderLocation);
             RemoveSortFolderCmd = ReactiveCommand.Create<SortFolder>(RemoveSortFolder);
             RemoveFileCmd = ReactiveCommand.Create<FileQueueItem>(RemoveFile);
+            OpenSessionCmd = ReactiveCommand.Create(OpenSession);
+            SaveSessionCmd = ReactiveCommand.Create(SaveSession);
             UndoCmd = ReactiveCommand.Create(Undo);
             RedoCmd = ReactiveCommand.Create(Redo);
 
@@ -58,6 +55,8 @@ namespace VisualFileSorter.ViewModels
         public ReactiveCommand<SortFolder, Unit> RemapSortFolderLocationCmd { get; }
         public ReactiveCommand<SortFolder, Unit> RemoveSortFolderCmd { get; }
         public ReactiveCommand<FileQueueItem, Unit> RemoveFileCmd { get; }
+        public ReactiveCommand<Unit, Unit> OpenSessionCmd { get; }
+        public ReactiveCommand<Unit, Unit> SaveSessionCmd { get; }
         public ReactiveCommand<Unit, Unit> UndoCmd { get; }
         public ReactiveCommand<Unit, Unit> RedoCmd { get; }
 
@@ -109,66 +108,72 @@ namespace VisualFileSorter.ViewModels
             var result = await dlg.ShowAsync(mHostWindow);
             if (result != null && 0 < result.Count())
             {
-                List<FileQueueItem> fileItems = new List<FileQueueItem>();
-                List<string> alreadyInfileItems = new List<string>();
-                foreach (string fileItem in result)
+                AddFilesToSession(result);
+            }
+        }
+
+        // Adds an array of files to the session
+        private void AddFilesToSession(string[] files)
+        {
+            List<FileQueueItem> fileItems = new List<FileQueueItem>();
+            List<string> alreadyInfileItems = new List<string>();
+            foreach (string fileItem in files)
+            {
+                // Make sure file is not already in VFS
+                if (!CheckForFileInSession(fileItem))
                 {
-                    // Make sure file is not already in VFS
-                    if (!CheckForFileInSession(fileItem))
-                    {
-                        FileQueueItem tempFileQueueItem = new FileQueueItem();
-                        int THUMB_SIZE = 64;
-                        try
-                        {
-                            Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                                fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                            tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
-                        }
-                        catch (Exception)
-                        {
-                            // Thumbnail error, set to default error thumbnail
-                            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                            tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
-                        }
-
-                        tempFileQueueItem.FullName = fileItem;
-                        tempFileQueueItem.Name = Path.GetFileName(fileItem);
-                        tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
-
-                        fileItems.Add(tempFileQueueItem);
-                    }
-                    else
-                    {
-                        alreadyInfileItems.Add(fileItem);
-                    }
-                }
-                FileQueue.EnqueueRange(fileItems);
-
-                // Dequeue the first item
-                if (CurrentFileQueueItem?.Name == null && 0 < FileQueue.Count())
-                {
-                    CurrentFileQueueItem = FileQueue.Dequeue();
-
+                    FileQueueItem tempFileQueueItem = new FileQueueItem();
+                    int THUMB_SIZE = 64;
                     try
                     {
-                        int THUMB_SIZE = 256;
                         Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
-                           CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
-                        CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                            fileItem, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                        tempFileQueueItem.SmallImage = ConvertBitmap(thumbnail);
                     }
                     catch (Exception)
                     {
                         // Thumbnail error, set to default error thumbnail
                         var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                        CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                        tempFileQueueItem.SmallImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
                     }
-                }
 
-                // Display message that some files have already been imported
-                if (0 < alreadyInfileItems.Count())
-                {
-                    OpenImportFilesAlreadyInDialog(alreadyInfileItems);
+                    tempFileQueueItem.FullName = fileItem;
+                    tempFileQueueItem.Name = Path.GetFileName(fileItem);
+                    tempFileQueueItem.IsPlayableMedia = CheckIfPlayableMedia(Path.GetExtension(fileItem));
+
+                    fileItems.Add(tempFileQueueItem);
                 }
+                else
+                {
+                    alreadyInfileItems.Add(fileItem);
+                }
+            }
+            FileQueue.EnqueueRange(fileItems);
+
+            // Dequeue the first item
+            if (CurrentFileQueueItem?.Name == null && 0 < FileQueue.Count())
+            {
+                CurrentFileQueueItem = FileQueue.Dequeue();
+
+                try
+                {
+                    int THUMB_SIZE = 256;
+                    Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
+                       CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
+                    CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
+                }
+                catch (Exception)
+                {
+                    // Thumbnail error, set to default error thumbnail
+                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                    CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
+                }
+            }
+
+            // Display message that some files have already been imported
+            if (0 < alreadyInfileItems.Count())
+            {
+                OpenImportFilesAlreadyInDialog(alreadyInfileItems);
             }
         }
 
@@ -579,28 +584,12 @@ namespace VisualFileSorter.ViewModels
                         string[] splitShortcut = shortcutStr.Split('+');
                         if (2 == splitShortcut.Count())
                         {
-                            // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
-                            if (splitShortcut[1].Contains("Oem"))
-                            {
-                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1].Remove(0, 3);
-                            }
-                            else
-                            {
-                                sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
-                            }
+                            sortFolder.ShortcutLabel = splitShortcut[0] + " + " + splitShortcut[1];
                         }
                     }
                     else
                     {
-                        // TODO convert the Oem[X] to the symbol; ex. OemTilde => ~
-                        if (shortcutStr.Contains("Oem"))
-                        {
-                            sortFolder.ShortcutLabel = shortcutStr.Remove(0, 3);
-                        }
-                        else
-                        {
-                            sortFolder.ShortcutLabel = shortcutStr;
-                        }
+                        sortFolder.ShortcutLabel = shortcutStr;
                     }
                 }
             }
@@ -701,15 +690,7 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 120;
             messageVM.MessageWindowErrorIcon = true;
-            messageVM.MessageWindowWarningIcon = false;
-            messageVM.MessageWindowInfoIcon = false;
-
             messageVM.MB_MissingSortFolderVisible = true;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -724,16 +705,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 410;
             messageVM.MessageWindowHeight = 135;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
             messageVM.MB_RemoveSortFolderVisible = true;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
 
             // Show the message box
             var result = await ShowDialog.Handle(messageVM);
@@ -756,16 +729,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 267;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
             messageVM.MB_MissingTransferFilesVisible = true;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
             messageVM.MB_MissingTransferFilesList = string.Join("\n", missingSrcFiles);
 
             // Show the message box
@@ -789,16 +754,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Information";
             messageVM.MessageWindowWidth = 315;
             messageVM.MessageWindowHeight = 120;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
             messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
             messageVM.MB_BadFileTransferVisible = true;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -813,16 +770,8 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Warning";
             messageVM.MessageWindowWidth = 300;
             messageVM.MessageWindowHeight = 227;
-            messageVM.MessageWindowErrorIcon = false;
             messageVM.MessageWindowWarningIcon = true;
-            messageVM.MessageWindowInfoIcon = false;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
             messageVM.MB_ImportFilesAlreadyInVisible = true;
-            messageVM.MB_ShortcutAlreadyExistsVisible = false;
             messageVM.MB_ImportFilesAlreadyInList = string.Join("\n", alreadyInfileItems);
 
             // Show the message box
@@ -838,16 +787,66 @@ namespace VisualFileSorter.ViewModels
             messageVM.MessageWindowTitle = "Information";
             messageVM.MessageWindowWidth = 250;
             messageVM.MessageWindowHeight = 100;
-            messageVM.MessageWindowErrorIcon = false;
-            messageVM.MessageWindowWarningIcon = false;
             messageVM.MessageWindowInfoIcon = true;
-
-            messageVM.MB_MissingSortFolderVisible = false;
-            messageVM.MB_RemoveSortFolderVisible = false;
-            messageVM.MB_MissingTransferFilesVisible = false;
-            messageVM.MB_BadFileTransferVisible = false;
-            messageVM.MB_ImportFilesAlreadyInVisible = false;
             messageVM.MB_ShortcutAlreadyExistsVisible = true;
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
+        }
+
+        // Display warning that the current session will be replaced
+        public async Task<DialogResult> OpenReplaceSessionDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Warning";
+            messageVM.MessageWindowWidth = 400;
+            messageVM.MessageWindowHeight = 100;
+            messageVM.MessageWindowWarningIcon = true;
+            messageVM.MB_ReplaceSessionVisible = true;
+
+            // Show the message box
+            var result = await ShowDialog.Handle(messageVM);
+            if (result != null)
+            {
+                return result.DiaResult;
+            }
+            else
+            {
+                return DialogResult.Cancel;
+            }
+        }
+
+        // Display error that opening the session went wrong
+        public async void OpenSessionErrorDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Error";
+            messageVM.MessageWindowWidth = 290;
+            messageVM.MessageWindowHeight = 60;
+            messageVM.MessageWindowErrorIcon = true;
+            messageVM.MB_OpenSaveSessionErrorVisible = true;
+            messageVM.MB_OpenSaveSessionErrorMsg = "Unexpected error while reading .VFSS file!";
+
+            // Show the message box
+            await ShowDialog.Handle(messageVM);
+        }
+
+        // Display error that saving the session went wrong
+        public async void SaveSessionErrorDialog()
+        {
+            // Set window properties
+            var messageVM = new MessageWindowViewModel();
+
+            messageVM.MessageWindowTitle = "Error";
+            messageVM.MessageWindowWidth = 290;
+            messageVM.MessageWindowHeight = 60;
+            messageVM.MessageWindowErrorIcon = true;
+            messageVM.MB_OpenSaveSessionErrorVisible = true;
+            messageVM.MB_OpenSaveSessionErrorMsg = "Unexpected error while saving .VFSS file!";
 
             // Show the message box
             await ShowDialog.Handle(messageVM);
@@ -971,20 +970,148 @@ namespace VisualFileSorter.ViewModels
         #endregion Undo/Redo Operations
 
         #region Open/Save Session
-        private bool OpenSession()
+
+        // Open a VFS session file
+        private async void OpenSession()
         {
-            return true;
+            // Check if the current session is not empty.
+            if (CurrentFileQueueItem?.FullName != null || 0 < FileQueue.Count() || 0 < SortFolderQueue.Count())
+            {
+                var dialogResult = await OpenReplaceSessionDialog();
+                if (dialogResult == DialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            // Prompt user for file selection of session to be opened.
+            var dlg = new OpenFileDialog();
+            dlg.Title = "Open Session";
+            dlg.AllowMultiple = false;
+            dlg.Filters.Add(new FileDialogFilter() { Name = "VFS Session", Extensions = { "vfss" } });
+            dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var fileResult = await dlg.ShowAsync(mHostWindow);
+            if (fileResult != null && 0 < fileResult.Count())
+            {
+                try
+                {
+                    // Clear current session
+                    FileQueue = new ObservableQueue<FileQueueItem>();
+                    SortFolderQueue = new ObservableQueue<SortFolder>();
+                    CurrentFileQueueItem = null;
+
+                    // Create new session for opened .vfss file.
+                    Session openedSession = new Session();
+                    string jsonString = File.ReadAllText(fileResult[0]);
+                    openedSession = openedSession.Deserialize(jsonString);
+
+                    if (openedSession != null)
+                    {
+                        if (openedSession.FileQueue != null
+                            && 0 < openedSession.FileQueue.Count()
+                            && openedSession.FileQueue[0] != null)
+                        {
+                            // Add FileQueue from saved session to the view
+                            AddFilesToSession(openedSession.FileQueue.ToArray());
+                        }
+
+                        if (openedSession.SortFolders != null)
+                        {
+                            lock (mSortFolderQueueLock)
+                            {
+                                // Add SortFolders from saved session to the view
+                                foreach (SortFolderJson savedSortFolder in openedSession.SortFolders)
+                                {
+                                    SortFolder tempFolderQueueItem = new SortFolder();
+                                    tempFolderQueueItem.FullName = savedSortFolder.FullName;
+                                    foreach (string sortedFile in savedSortFolder.SortSrcFiles)
+                                    {
+                                        tempFolderQueueItem.SortSrcFiles.TryAdd(sortedFile, sortedFile);
+                                    }
+
+                                    // If shortcut is set in Saved Session.
+                                    if (!String.IsNullOrWhiteSpace(savedSortFolder.Shortcut)) 
+                                    {
+                                        tempFolderQueueItem.Shortcut = KeyGesture.Parse(savedSortFolder.Shortcut);
+                                        tempFolderQueueItem.ShortcutLabel = savedSortFolder.Shortcut;
+                                        tempFolderQueueItem.ShortcutButtonContent = "Edit Shortcut";
+                                    }
+                                    else
+                                    {
+                                        tempFolderQueueItem.ShortcutButtonContent = "Add Shortcut";
+                                    }
+                                    tempFolderQueueItem.Name = Path.GetFileName(savedSortFolder.FullName);
+                                    SortFolderQueue.Enqueue(tempFolderQueueItem);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    OpenSessionErrorDialog();
+                }
+            }
         }
 
-        private bool SaveSession()
+        // Save current session as json
+        private async void SaveSession()
         {
-            return true;
+            // Create new session
+            Session saveSession = new Session();
+
+            // Get the CurrentFileQueueItem filepath
+            if (CurrentFileQueueItem != null)
+            {
+                saveSession.FileQueue.Add(CurrentFileQueueItem.FullName);
+            }
+
+            // Get each file in the file queue
+            foreach (FileQueueItem fileItem in FileQueue)
+            {
+                saveSession.FileQueue.Add(fileItem.FullName);
+            }
+
+            // Get each SortFolder
+            foreach (SortFolder folderItem in SortFolderQueue)
+            {
+                SortFolderJson tempSortFolderJson = new SortFolderJson();
+                tempSortFolderJson.FullName = folderItem.FullName;
+                tempSortFolderJson.Shortcut = folderItem.ShortcutLabel;
+                foreach (var sortFileItem in folderItem.SortSrcFiles)
+                {
+                    tempSortFolderJson.SortSrcFiles.Add(sortFileItem.Value);
+                }
+
+                // Add to saveSession
+                saveSession.SortFolders.Add(tempSortFolderJson);
+            }
+
+            // Open SaveFileDialog
+            var dlg = new SaveFileDialog();
+            dlg.Title = "Save Session";
+            dlg.InitialFileName = "VFS_Session.vfss";
+            dlg.Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var result = await dlg.ShowAsync(mHostWindow);
+            if (result != null)
+            {
+                try
+                {
+                    // Save session file to disk
+                    File.WriteAllText(result, saveSession.Serialize());
+                }
+                catch (Exception)
+                {
+                    SaveSessionErrorDialog();
+                }
+            }
         }
+
         #endregion Open/Save Session
 
         #region Properties and Members
 
-        public FileQueueItem CurrentFileQueueItem
+        public FileQueueItem? CurrentFileQueueItem
         {
             get => mCurrentFileQueueItem;
             set => this.RaiseAndSetIfChanged(ref mCurrentFileQueueItem, value);
@@ -1034,7 +1161,7 @@ namespace VisualFileSorter.ViewModels
 
         private ObservableQueue<SortFolder> mSortFolderQueue = new ObservableQueue<SortFolder>();
         private ObservableQueue<FileQueueItem> mFileQueue = new ObservableQueue<FileQueueItem>();
-        private FileQueueItem mCurrentFileQueueItem = new FileQueueItem();
+        private FileQueueItem? mCurrentFileQueueItem = new FileQueueItem();
         private CircularBuffer<UndoRedoItem> mUndoBuffer = new CircularBuffer<UndoRedoItem>(30);
         private CircularBuffer<UndoRedoItem> mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
         private Window mHostWindow;

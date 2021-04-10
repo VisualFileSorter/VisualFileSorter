@@ -233,9 +233,13 @@
       <!--Ribbon-->
       <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="#CCD5F0">
         <StackPanel Orientation="Horizontal">
+          
           <!--Open Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                   HotKey="Ctrl + O">
+                  HotKey="Ctrl + O"
+                  ToolTip.ShowDelay="300"
+                  ToolTip.Tip="Open Session (Ctrl + O)"
+                  Command="{Binding OpenSessionCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -250,7 +254,10 @@
 
           <!--Save Session Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
-                  HotKey="Ctrl + S">
+                  HotKey="Ctrl + S" 
+                  ToolTip.ShowDelay="300"
+                  ToolTip.Tip="Save Session (Ctrl + S)"
+                  Command="{Binding SaveSessionCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
                 <DrawingGroup>
@@ -269,8 +276,10 @@
           <!--Undo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding UndoEnabled}"
-                  Command="{Binding UndoCmd}"
-                  HotKey="Ctrl + Z">
+                  HotKey="Ctrl + Z"
+                  ToolTip.ShowDelay="300"
+                  ToolTip.Tip="Undo (Ctrl + Z)"
+                  Command="{Binding UndoCmd}">
             <Grid>
               <DrawingPresenter Width="30" Height="30" IsVisible="{Binding UndoEnabled}">
                 <DrawingPresenter.Drawing>
@@ -297,8 +306,10 @@
           <!--Redo Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
                   IsEnabled="{Binding RedoEnabled}"
-                  Command="{Binding RedoCmd}"
-                  HotKey="Ctrl + Y">
+                  HotKey="Ctrl + Y"
+                  ToolTip.ShowDelay="300"
+                  ToolTip.Tip="Redo (Ctrl + Y)"
+                  Command="{Binding RedoCmd}">
             <Grid>
               <DrawingPresenter Width="30" Height="30" IsVisible="{Binding RedoEnabled}">
                 <DrawingPresenter.Drawing>
@@ -327,6 +338,8 @@
 
           <!--Transfer Ribbon Button-->
           <Button Width="35" Height="35" Background="Transparent" Classes="VFSButton"
+                  ToolTip.ShowDelay="300"
+                  ToolTip.Tip="Start Transfer of Files"
                   Command="{Binding TransferFilesCmd}">
             <DrawingPresenter Width="30" Height="30">
               <DrawingPresenter.Drawing>
