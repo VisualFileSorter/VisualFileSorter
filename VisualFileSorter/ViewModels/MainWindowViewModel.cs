@@ -980,6 +980,7 @@ namespace VisualFileSorter.ViewModels
                         }
 
                         // Re-add the file back into its respective SortFolder and get next file
+                        foundSortFolder.SortFlash = true;
                         foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
                         CurrentFileQueueItem = FileQueue.Dequeue();
                         if (CurrentFileQueueItem != null)
@@ -998,6 +999,13 @@ namespace VisualFileSorter.ViewModels
                                 CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
                             }
                         }
+
+                        // Remove sort flash animation
+                        var _RemoveGridAnimTask = Task.Run(async () =>
+                        {
+                            await Task.Delay(200);
+                            foundSortFolder.SortFlash = false;
+                        });
                     }
                 }
 
