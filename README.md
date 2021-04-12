@@ -20,6 +20,7 @@ I have no plans to make this program cross-platform, but feel free to either for
 # Dependencies
 
 [Avalonia](https://github.com/AvaloniaUI/Avalonia)\
+[Avalonia Behaviors](https://github.com/wieslawsoltes/AvaloniaBehaviors)\
 [Avalonia Custom TitleBar Template](https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate)\
 [ReactiveUI](https://github.com/reactiveui/ReactiveUI)
 
