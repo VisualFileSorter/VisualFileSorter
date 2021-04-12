@@ -910,7 +910,7 @@ namespace VisualFileSorter.ViewModels
                 // Add the current item back onto the file queue
                 if (CurrentFileQueueItem != null)
                 {
-                    FileQueue.Enqueue(CurrentFileQueueItem);
+                    FileQueue.EnqueueFront(CurrentFileQueueItem);
                 }
 
                 // Recreate the FileQueueItem object for the sorted file
