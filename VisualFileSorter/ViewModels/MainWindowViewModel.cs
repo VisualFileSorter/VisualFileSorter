@@ -327,10 +327,12 @@ namespace VisualFileSorter.ViewModels
                 {
                     // Add the operation onto the undo buffer
                     mUndoBuffer.PushBack(new UndoRedoItem(CurrentFileQueueItem.FullName, foundSortFolder.FullName));
+                    mRedoBuffer = new CircularBuffer<UndoRedoItem>(30);
                     UndoEnabled = !mUndoBuffer.IsEmpty;
                     RedoEnabled = !mRedoBuffer.IsEmpty;
 
                     // Add the file to the sort folder and get next file
+                    foundSortFolder.SortFlash = true;
                     foundSortFolder.SortSrcFiles.TryAdd(CurrentFileQueueItem.FullName, CurrentFileQueueItem.FullName);
                     CurrentFileQueueItem = FileQueue.Dequeue();
                     if (CurrentFileQueueItem != null)
@@ -349,6 +351,13 @@ namespace VisualFileSorter.ViewModels
                             CurrentFileQueueItem.BigImage = new Avalonia.Media.Imaging.Bitmap(assets.Open(new Uri("avares://VisualFileSorter/Assets/ThumbnailError.png")));
                         }
                     }
+
+                    // Remove sort flash animation
+                    var _RemoveGridAnimTask = Task.Run(async () =>
+                    {
+                        await Task.Delay(200);
+                        foundSortFolder.SortFlash = false;
+                    });
                 }
             }
         }
@@ -671,7 +680,7 @@ namespace VisualFileSorter.ViewModels
                    extension == ".pdf" || extension == ".tex" ||
                    extension == ".xls" || extension == ".xlsx" ||
                    extension == ".ppt" || extension == ".pptx" ||
-                   extension == ".txt";
+                   extension == ".txt" || extension == ".gif";
         }
 
         // Convert Drawing.Bitmap to Avalonia.Media.Imaging.Bitmap

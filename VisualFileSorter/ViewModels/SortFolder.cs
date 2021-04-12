@@ -48,6 +48,11 @@ namespace VisualFileSorter.ViewModels
             set => this.RaiseAndSetIfChanged(ref mFolderExists, value);
         }
 
+        public bool SortFlash
+        {
+            get => mSortFlash;
+            set => this.RaiseAndSetIfChanged(ref mSortFlash, value);
+        }
 
         private ConcurrentDictionary<string, string> mSortSrcFiles = new ConcurrentDictionary<string, string>();
         private KeyGesture mShortcut = null;
@@ -55,5 +60,6 @@ namespace VisualFileSorter.ViewModels
         private string mShortcutLabel = "            ";
         private bool mIsShortcutFlashing = false;
         private bool mFolderExists = true;
+        private bool mSortFlash = false;
     }
 }
