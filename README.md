@@ -6,8 +6,8 @@ Visual File Sorter is a Windows utility program to quickly and visually sort fil
 
 
 # Download
-[Download 64-bit](https://github.com/VisualFileSorter/VisualFileSorter/releases/download/1.0/VisualFileSorter_1.0_x64.zip)\
-[Download 32-bit](https://github.com/VisualFileSorter/VisualFileSorter/releases/download/1.0/VisualFileSorter_1.0_x86.zip)
+[Download 64-bit](https://github.com/VisualFileSorter/VisualFileSorter/releases/download/1.1/VisualFileSorter_1.1_x64.zip)\
+[Download 32-bit](https://github.com/VisualFileSorter/VisualFileSorter/releases/download/1.1/VisualFileSorter_1.1_x86.zip)
 
 # Cross-platform Support
 Although Avalonia is cross-platform, Visual File Sorter makes use of the following Win32 functionality:
@@ -20,6 +20,7 @@ I have no plans to make this program cross-platform, but feel free to either for
 # Dependencies
 
 [Avalonia](https://github.com/AvaloniaUI/Avalonia)\
+[Avalonia Behaviors](https://github.com/wieslawsoltes/AvaloniaBehaviors)\
 [Avalonia Custom TitleBar Template](https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate)\
 [ReactiveUI](https://github.com/reactiveui/ReactiveUI)
 
