@@ -31,6 +31,11 @@ namespace VisualFileSorter.Helpers
             this._collection.Add(item);
         }
 
+        public void EnqueueFront(T item)
+        {
+            this._collection.Insert(0, item);
+        }
+
         public void EnqueueRange(IEnumerable<T> items)
         {
             if (items == null)
