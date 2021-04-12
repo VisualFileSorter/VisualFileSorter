@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="using:Avalonia.Xaml.Interactivity"
         xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+        xmlns:helpers="clr-namespace:VisualFileSorter.Helpers;assembly=VisualFileSorter"
         xmlns:titlebars="clr-namespace:VisualFileSorter.Views.CustomTitleBars;assembly=VisualFileSorter"
         xmlns:local="clr-namespace:VisualFileSorter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -31,6 +32,26 @@
             </KeyFrame>
             <KeyFrame Cue="100%">
               <Setter Property="Opacity" Value="0.0"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
+
+      <Style Selector="Grid.SortFlash">
+        <Style.Animations>
+          <Animation Duration="0:0:0.2" IterationCount="1">
+            <KeyFrame Cue="0%">
+              <Setter Property="Opacity" Value="0.0"/>
+              <Setter Property="Background" Value="#CCD5F0"/>
+            </KeyFrame>
+            <KeyFrame Cue="50%">
+              <Setter Property="Opacity" Value="1.0"/>
+            </KeyFrame>
+            <KeyFrame Cue="99%">
+              <Setter Property="Opacity" Value="0.0"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Background" Value="Transparent"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -535,6 +556,13 @@
                                   Command="{Binding $parent[ListBox].DataContext.RemapSortFolderLocationCmd}"/>
                       </ContextMenu>
                     </Grid.ContextMenu>
+
+                    <!--Sort Animation-->
+                    <Grid Name="SortFlashGrid" Margin="-15,-15,-15,-25" ZIndex="-1">
+                      <i:Interaction.Behaviors>
+                        <helpers:AddClassBehavior Class="SortFlash" IsEnabled="{Binding SortFlash}"/>
+                      </i:Interaction.Behaviors>
+                    </Grid>
 
                     <!--SortFolder Icon-->
                     <DrawingPresenter Grid.Row="0" ZIndex="0"
