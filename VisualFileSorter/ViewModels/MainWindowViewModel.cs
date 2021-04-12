@@ -165,7 +165,7 @@ namespace VisualFileSorter.ViewModels
 
                 try
                 {
-                    int THUMB_SIZE = 256;
+                    int THUMB_SIZE = 512;
                     Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                        CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
                     CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
@@ -339,7 +339,7 @@ namespace VisualFileSorter.ViewModels
                     {
                         try
                         {
-                            int THUMB_SIZE = 256;
+                            int THUMB_SIZE = 512;
                             Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                                CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
                             CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
@@ -501,7 +501,7 @@ namespace VisualFileSorter.ViewModels
 
                             try
                             {
-                                int THUMB_SIZE = 256;
+                                int THUMB_SIZE = 512;
                                 Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                                    CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
                                 CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
@@ -916,7 +916,7 @@ namespace VisualFileSorter.ViewModels
                 // Recreate the FileQueueItem object for the sorted file
                 FileQueueItem tempFileQueueItem = new FileQueueItem();
                 int THUMB_SIZE = 64;
-                int THUMB_SIZE_BIG = 256;
+                int THUMB_SIZE_BIG = 512;
                 try
                 {
                     Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
@@ -987,7 +987,7 @@ namespace VisualFileSorter.ViewModels
                         {
                             try
                             {
-                                int THUMB_SIZE = 256;
+                                int THUMB_SIZE = 512;
                                 Bitmap thumbnail = Helpers.WindowsThumbnailProvider.GetThumbnail(
                                    CurrentFileQueueItem.FullName, THUMB_SIZE, THUMB_SIZE, Helpers.ThumbnailOptions.None);
                                 CurrentFileQueueItem.BigImage = ConvertBitmap(thumbnail);
